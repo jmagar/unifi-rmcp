@@ -1,20 +1,27 @@
 {
   "name": "rustifi",
-  "version": "0.1.0",
-  "description": "UniFi network MCP server for Codex — read-only access to connected clients, devices, WiFi configs, alarms, and site health.",
+  "description": "UniFi network MCP server for Codex \u2014 read-only access to connected clients, devices, WiFi configs, alarms, and site health.",
   "homepage": "https://github.com/jmagar/rustifi",
   "repository": "https://github.com/jmagar/rustifi",
   "license": "MIT",
-  "keywords": ["unifi", "networking", "homelab", "monitoring", "mcp"],
+  "keywords": [
+    "unifi",
+    "networking",
+    "homelab",
+    "monitoring",
+    "mcp"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "UniFi MCP",
     "shortDescription": "Query UniFi network clients, devices, and health",
-    "longDescription": "Read-only MCP server for Ubiquiti UniFi networks. Exposes connected wireless and wired clients, network devices (APs, switches, gateways), WiFi configurations (SSIDs, bands, security), site health, active alarms, recent events, controller sysinfo, and authenticated user info — all via a single unified MCP tool.",
+    "longDescription": "Read-only MCP server for Ubiquiti UniFi networks. Exposes connected wireless and wired clients, network devices (APs, switches, gateways), WiFi configurations (SSIDs, bands, security), site health, active alarms, recent events, controller sysinfo, and authenticated user info \u2014 all via a single unified MCP tool.",
     "developerName": "Jacob Magar",
     "category": "Infrastructure",
-    "capabilities": ["Read"],
+    "capabilities": [
+      "Read"
+    ],
     "websiteURL": "https://github.com/jmagar/rustifi",
     "defaultPrompt": [
       "Who is currently connected to my network? Show me all clients with their IP addresses.",

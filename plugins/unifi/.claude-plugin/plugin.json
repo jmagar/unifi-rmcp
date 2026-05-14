@@ -1,8 +1,9 @@
 {
   "name": "unifi",
-  "version": "0.1.0",
-  "description": "UniFi network management via MCP — monitor devices, clients, health, alarms, events, and WLANs through the rustifi MCP server.",
-  "author": { "name": "jmagar" },
+  "description": "UniFi network management via MCP \u2014 monitor devices, clients, health, alarms, events, and WLANs through the rustifi MCP server.",
+  "author": {
+    "name": "jmagar"
+  },
   "repository": "https://github.com/jmagar/rustifi",
   "license": "MIT",
   "keywords": [
@@ -73,14 +74,14 @@
     "use_docker": {
       "type": "boolean",
       "title": "Deploy with Docker",
-      "description": "True: run via the bundled docker compose stack (containerized, easier to upgrade, exposes port 7474, mounts /data volume). False: run the bundled binary directly — you are responsible for starting and managing it.",
+      "description": "True: run via the bundled docker compose stack (containerized, easier to upgrade, exposes port 7474, mounts /data volume). False: run the bundled binary directly \u2014 you are responsible for starting and managing it.",
       "required": true,
       "default": false
     },
     "unifi_url": {
       "type": "string",
       "title": "UniFi controller URL",
-      "description": "Base URL of your UniFi controller, e.g. https://192.168.1.1 or https://unifi.local. Required — the server will fail to start without this.",
+      "description": "Base URL of your UniFi controller, e.g. https://192.168.1.1 or https://unifi.local. Required \u2014 the server will fail to start without this.",
       "sensitive": true,
       "required": true,
       "default": ""
@@ -88,7 +89,7 @@
     "unifi_api_key": {
       "type": "string",
       "title": "UniFi API key",
-      "description": "X-API-KEY value for UniFi controller authentication. Generate in: UniFi OS → Settings → Admins & Users → API Keys. Required.",
+      "description": "X-API-KEY value for UniFi controller authentication. Generate in: UniFi OS \u2192 Settings \u2192 Admins & Users \u2192 API Keys. Required.",
       "sensitive": true,
       "required": true,
       "default": ""

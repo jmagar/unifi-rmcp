@@ -60,7 +60,7 @@ logs:
     docker compose logs -f
 
 health:
-    curl -sf http://localhost:7474/health | jq .
+    curl -sf http://localhost:40030/health | jq .
 
 # Recreate the container from the current image (useful after config/env changes)
 repair:
@@ -89,9 +89,6 @@ gen-token:
 test-mcporter:
     bash tests/mcporter/test-tools.sh
 
-test-live:
-    bash tests/mcporter/test-tools.sh
-
 # ── Plugin / skills validation ───────────────────────────────────────────────
 
 validate-skills:
@@ -114,20 +111,20 @@ validate-skills:
 generate-cli:
     #!/usr/bin/env bash
     set -euo pipefail
-    echo "Server must be running on port 7474 (run 'just dev' first)"
+    echo "Server must be running on port 40030 (run 'just dev' first)"
     echo "Generated CLI embeds your token — do not commit or share"
     mkdir -p dist dist/.cache
     current_hash=$(timeout 10 curl -sf \
       -H "Authorization: Bearer ${UNIFI_MCP_TOKEN:-}" \
       -H "Accept: application/json, text/event-stream" \
-      http://localhost:7474/mcp/tools/list 2>/dev/null | sha256sum | cut -d' ' -f1 || echo "nohash")
+      http://localhost:40030/mcp/tools/list 2>/dev/null | sha256sum | cut -d' ' -f1 || echo "nohash")
     cache_file="dist/.cache/rustifi-cli.schema_hash"
     if [[ -f "$cache_file" ]] && [[ "$(cat "$cache_file")" == "$current_hash" ]] && [[ -f "dist/rustifi-cli" ]]; then
       echo "SKIP: tool schema unchanged — use existing dist/rustifi-cli"
       exit 0
     fi
     timeout 30 mcporter generate-cli \
-      --command http://localhost:7474/mcp \
+      --command http://localhost:40030/mcp \
       --header "Authorization: Bearer ${UNIFI_MCP_TOKEN:-}" \
       --name rustifi-cli \
       --output dist/rustifi-cli
@@ -167,9 +164,6 @@ publish bump="patch":
     echo "Version: ${CURRENT} → ${NEW}"
     sed -i "s/^version = \"${CURRENT}\"/version = \"${NEW}\"/" Cargo.toml
     cargo check 2>/dev/null || true
-    for f in plugins/unifi/.claude-plugin/plugin.json; do
-      [ -f "$f" ] && python3 -c 'import json,sys; p=sys.argv[1]; v=sys.argv[2]; d=json.load(open(p)); d["version"]=v; json.dump(d,open(p,"w"),indent=2); open(p,"a").write("\n")' "$f" "${NEW}"
-    done
     git add -A && git commit -m "release: v${NEW}" && git tag "v${NEW}" && git push origin main --tags
     echo "Tagged v${NEW} — publish workflow will run automatically"
 
