@@ -92,18 +92,12 @@ test-mcporter:
 # ── Plugin / skills validation ───────────────────────────────────────────────
 
 validate-skills:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    found=0
-    for dir in plugins/unifi/skills/*; do
-      [[ -d "$dir" ]] || continue
-      found=1
-      test -f "$dir/SKILL.md" || { echo "MISSING: $dir/SKILL.md"; exit 1; }
-      grep -q '^name:' "$dir/SKILL.md" || { echo "MISSING name: $dir/SKILL.md"; exit 1; }
-      grep -q '^description:' "$dir/SKILL.md" || { echo "MISSING description: $dir/SKILL.md"; exit 1; }
-    done
-    [[ "$found" -eq 1 ]] || { echo "MISSING: plugins/unifi/skills/*"; exit 1; }
-    echo "OK"
+    bash scripts/validate-plugin-layout.sh
+
+validate-plugin: validate-skills
+
+runtime-current:
+    bash scripts/check-runtime-current.sh --unit unifi-mcp.service --service unifi-mcp --expected-binary target/release/unifi
 
 # ── Release / publish ─────────────────────────────────────────────────────────
 
@@ -143,6 +137,8 @@ build-plugin: release
     if [ ! -x "$target_dir/release/unifi" ] && [ -x ".cache/cargo/release/unifi" ]; then
       target_dir=".cache/cargo"
     fi
+    mkdir -p bin plugins/unifi/bin
+    install -m 755 "$target_dir/release/unifi" bin/unifi
     install -m 755 "$target_dir/release/unifi" plugins/unifi/bin/unifi
 
 # Publish: bump version, tag, push (triggers crates.io + Docker publish)
