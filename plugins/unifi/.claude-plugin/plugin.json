@@ -14,7 +14,6 @@
     "mcp"
   ],
   "mcpServers": "./.mcp.json",
-  "hooks": "./hooks/hooks.json",
   "skills": "./skills",
   "userConfig": {
     "server_url": {
