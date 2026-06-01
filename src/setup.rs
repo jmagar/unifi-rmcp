@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use anyhow::{bail, Result};
 use serde::Serialize;
 
-const BINARY_NAME: &str = "unifi";
+const BINARY_NAME: &str = "runifi";
 const APPDATA_ENV: &str = "UNIFI_MCP_HOME";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

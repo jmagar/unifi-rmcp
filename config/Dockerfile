@@ -19,13 +19,13 @@ COPY src/ src/
 RUN --mount=type=cache,id=rustifi-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=rustifi-cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=rustifi-cargo-target,target=/app/target,sharing=locked \
-    touch src/main.rs && cargo build --release --locked -p rustifi && cp target/release/unifi /usr/local/bin/unifi
+    touch src/main.rs && cargo build --release --locked -p rustifi && cp target/release/runifi /usr/local/bin/runifi
 
 # Runtime — minimal debian image with ca-certificates for TLS to the UniFi controller
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates curl gosu && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /usr/local/bin/unifi /usr/local/bin/unifi
+COPY --from=builder /usr/local/bin/runifi /usr/local/bin/runifi
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

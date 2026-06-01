@@ -9,7 +9,7 @@
 #
 set -euo pipefail
 
-BINARY_NAME="unifi"
+BINARY_NAME="runifi"
 INSTALL_DIR="${INSTALL_DIR:-${HOME}/.local/bin}"
 REPO="jmagar/rustifi"
 VERSION="${RUSTIFI_VERSION:-latest}"

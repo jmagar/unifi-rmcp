@@ -97,7 +97,7 @@ validate-skills:
 validate-plugin: validate-skills
 
 runtime-current:
-    bash scripts/check-runtime-current.sh --unit unifi-mcp.service --service unifi-mcp --expected-binary target/release/unifi
+    bash scripts/check-runtime-current.sh --unit unifi-mcp.service --service unifi-mcp --expected-binary target/release/runifi
 
 # ── Release / publish ─────────────────────────────────────────────────────────
 
@@ -134,12 +134,12 @@ build-plugin: release
     #!/bin/sh
     set -eu
     target_dir="${CARGO_TARGET_DIR:-target}"
-    if [ ! -x "$target_dir/release/unifi" ] && [ -x ".cache/cargo/release/unifi" ]; then
+    if [ ! -x "$target_dir/release/runifi" ] && [ -x ".cache/cargo/release/runifi" ]; then
       target_dir=".cache/cargo"
     fi
     mkdir -p bin plugins/unifi/bin
-    install -m 755 "$target_dir/release/unifi" bin/unifi
-    install -m 755 "$target_dir/release/unifi" plugins/unifi/bin/unifi
+    install -m 755 "$target_dir/release/runifi" bin/runifi
+    install -m 755 "$target_dir/release/runifi" plugins/unifi/bin/runifi
 
 # Publish: bump version, tag, push (triggers crates.io + Docker publish)
 publish bump="patch":

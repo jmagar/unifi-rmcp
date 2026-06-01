@@ -34,20 +34,20 @@ export_option() {
   export "${env_name}=${value}"
 }
 
-ensure_unifi_binary() {
-  if command -v unifi >/dev/null 2>&1; then
+ensure_runifi_binary() {
+  if command -v runifi >/dev/null 2>&1; then
     return 0
   fi
 
-  local bundled="${CLAUDE_PLUGIN_ROOT}/bin/unifi"
+  local bundled="${CLAUDE_PLUGIN_ROOT}/bin/runifi"
   if [[ -x "${bundled}" ]]; then
     mkdir -p "${HOME}/.local/bin"
-    ln -sf "${bundled}" "${HOME}/.local/bin/unifi"
+    ln -sf "${bundled}" "${HOME}/.local/bin/runifi"
     export PATH="${HOME}/.local/bin:${PATH}"
   fi
 
-  command -v unifi >/dev/null 2>&1 || {
-    printf 'unifi plugin setup: unifi binary not found on PATH or at %s\n' "${bundled}" >&2
+  command -v runifi >/dev/null 2>&1 || {
+    printf 'unifi plugin setup: runifi binary not found on PATH or at %s\n' "${bundled}" >&2
     exit 1
   }
 }
@@ -72,8 +72,8 @@ main() {
   export_option UNIFI_SKIP_TLS_VERIFY CLAUDE_PLUGIN_OPTION_UNIFI_SKIP_TLS UNIFI_SKIP_TLS_VERIFY
   export_option UNIFI_LEGACY CLAUDE_PLUGIN_OPTION_UNIFI_LEGACY UNIFI_LEGACY
 
-  ensure_unifi_binary
-  unifi setup plugin-hook "$@"
+  ensure_runifi_binary
+  runifi setup plugin-hook "$@"
 }
 
 main "$@"

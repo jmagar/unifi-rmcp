@@ -11,7 +11,7 @@ description = "UniFi MCP server — REST API bridge for Ubiquiti network control
 autobins = false
 
 [[bin]]
-name = "unifi"
+name = "runifi"
 path = "src/main.rs"
 
 [dependencies]

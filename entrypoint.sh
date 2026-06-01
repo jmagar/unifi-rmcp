@@ -3,7 +3,7 @@
 # Runs as root, validates config, sets up /data, then exec's as USER 1000:1000
 set -e
 
-SERVICE_NAME="unifi"
+SERVICE_NAME="runifi"
 BINARY="/usr/local/bin/${SERVICE_NAME}"
 
 DATA_DIR="${DATA_DIR:-/data}"
