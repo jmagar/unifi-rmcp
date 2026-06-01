@@ -1,5 +1,6 @@
 # Binary plugin distributions — tracked via Git LFS
 bin/* filter=lfs diff=lfs merge=lfs -text
+plugins/*/bin/* filter=lfs diff=lfs merge=lfs -text
 bin/unifi filter=lfs diff=lfs merge=lfs -text
 bin/unifi.exe filter=lfs diff=lfs merge=lfs -text
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
