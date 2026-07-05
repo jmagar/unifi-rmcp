@@ -1,6 +1,6 @@
-/// Tests for CLI argument parsing. These tests do not make network calls —
-/// they only verify that argument strings map to the right command variants
-/// and flags are extracted correctly.
+// Tests for CLI argument parsing. These tests do not make network calls.
+// They only verify that argument strings map to the right command variants
+// and flags are extracted correctly.
 
 fn parse(args: &[&str]) -> anyhow::Result<(String, bool)> {
     // Convert &str slice into Vec<String> as main.rs does

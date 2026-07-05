@@ -142,7 +142,7 @@ fn check_binary_in_path(binary: &str) -> DoctorCheck {
         .map(|dir| dir.join(binary).display().to_string());
 
     match found {
-        Some(path) => DoctorCheck::pass("config", format!("Binary in PATH"), path),
+        Some(path) => DoctorCheck::pass("config", "Binary in PATH".to_string(), path),
         None => DoctorCheck::fail(
             "config",
             "Binary in PATH",
@@ -379,27 +379,18 @@ fn print_doctor_report(checks: &[DoctorCheck], version: &str) {
 pub async fn run_doctor(config: &Config, json: bool) -> anyhow::Result<()> {
     let version = env!("CARGO_PKG_VERSION");
     let data_dir = default_data_dir();
-    let mut checks: Vec<DoctorCheck> = Vec::new();
-
-    // ── 1. Config / filesystem ────────────────────────────────────────────────
-    checks.push(check_config_file(&data_dir));
-    checks.push(check_dir_writable("Data directory", "config", &data_dir));
-    checks.push(check_dir_writable(
-        "Log directory",
-        "config",
-        &data_dir.join("logs"),
-    ));
-    checks.push(check_binary_in_path("unifi"));
-
-    // ── 2. Required env vars / config fields ──────────────────────────────────
-    checks.push(check_required_url("UNIFI_URL", &config.unifi.url));
-    checks.push(check_required_var("UNIFI_API_KEY", &config.unifi.api_key));
-    checks.push(check_optional_var(
-        "UNIFI_SITE",
-        &config.unifi.site,
-        "default",
-    ));
-    checks.push(check_tls_note(config.unifi.skip_tls_verify));
+    let mut checks: Vec<DoctorCheck> = vec![
+        // ── 1. Config / filesystem ────────────────────────────────────────────
+        check_config_file(&data_dir),
+        check_dir_writable("Data directory", "config", &data_dir),
+        check_dir_writable("Log directory", "config", &data_dir.join("logs")),
+        check_binary_in_path("unifi"),
+        // ── 2. Required env vars / config fields ──────────────────────────────
+        check_required_url("UNIFI_URL", &config.unifi.url),
+        check_required_var("UNIFI_API_KEY", &config.unifi.api_key),
+        check_optional_var("UNIFI_SITE", &config.unifi.site, "default"),
+        check_tls_note(config.unifi.skip_tls_verify),
+    ];
 
     // ── 3. Upstream connectivity (skip if URL is empty) ───────────────────────
     if !config.unifi.url.is_empty() {
