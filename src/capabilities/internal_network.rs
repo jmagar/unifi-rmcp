@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::api::ApiSourceFamily;
-use crate::capabilities::Capability;
+use crate::capabilities::{AuthScope, Capability};
 
 #[derive(Debug, Deserialize)]
 struct Inventory {
@@ -16,6 +16,8 @@ struct Tool {
     title: String,
     mutating: bool,
     runtime: bool,
+    auth_scope: String,
+    verification_mode: String,
 }
 
 pub fn capabilities() -> Vec<Capability> {
@@ -34,6 +36,8 @@ pub fn capabilities() -> Vec<Capability> {
             method: Some(tool.method),
             path: Some(tool.path),
             mutating: tool.mutating,
+            auth_scope: auth_scope(&tool.auth_scope),
+            verification_mode: Some(tool.verification_mode),
         })
         .collect::<Vec<_>>();
     caps.extend([
@@ -54,5 +58,14 @@ fn hybrid(action: &str, title: &str) -> Capability {
         method: None,
         path: None,
         mutating: false,
+        auth_scope: AuthScope::Read,
+        verification_mode: Some("contract_ok".to_string()),
+    }
+}
+
+fn auth_scope(scope: &str) -> AuthScope {
+    match scope {
+        "admin" => AuthScope::Admin,
+        _ => AuthScope::Read,
     }
 }

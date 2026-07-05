@@ -16,7 +16,7 @@ use rmcp::{
 };
 use serde_json::{Map, Value};
 
-use crate::capabilities::find_capability;
+use crate::capabilities::{find_capability, AuthScope};
 use crate::config::McpConfig;
 
 use super::{prompts, schemas::tool_definitions, tools::execute_tool, AppState, AuthPolicy};
@@ -309,12 +309,9 @@ pub fn required_scope_for(action: &str) -> Option<&'static str> {
         None
     } else {
         find_capability(action)
-            .map(|capability| {
-                if capability.mutating {
-                    ADMIN_SCOPE
-                } else {
-                    READ_SCOPE
-                }
+            .map(|capability| match capability.auth_scope {
+                AuthScope::Read => READ_SCOPE,
+                AuthScope::Admin => ADMIN_SCOPE,
             })
             .or(Some(DENY_SCOPE))
     }

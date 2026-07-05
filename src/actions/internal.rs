@@ -19,15 +19,6 @@ pub async fn execute(cfg: &UnifiConfig, capability: &Capability, params: &Value)
         "wlans" => client.wlans().await,
         "health" => client.health().await,
         "alarms" => client.alarms().await,
-        "events" => {
-            let mut value = client.events().await?;
-            if let Some(limit) = params.get("limit").and_then(Value::as_u64) {
-                if let Some(items) = value.get_mut("data").and_then(Value::as_array_mut) {
-                    items.truncate(limit as usize);
-                }
-            }
-            Ok(value)
-        }
         "sysinfo" => client.sysinfo().await,
         "me" => client.me().await,
         _ => execute_generic(cfg, capability, params).await,

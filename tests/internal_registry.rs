@@ -7,9 +7,9 @@ use serde_json::Value;
 #[test]
 fn internal_registry_contains_reference_count() {
     let inventory: Value =
-        serde_json::from_str(include_str!("../data/unifi_internal_reference_tools.json"))
-            .expect("internal reference inventory should parse");
-    assert_eq!(inventory["count"].as_u64(), Some(12));
+        serde_json::from_str(include_str!("../data/unifi_internal_endpoint_models.json"))
+            .expect("internal endpoint models should parse");
+    assert_eq!(inventory["runtime_count"].as_u64(), Some(12));
     assert_eq!(
         inventory["tools"].as_array().expect("tools array").len(),
         12
@@ -23,7 +23,7 @@ fn internal_registry_contains_reference_count() {
         .as_array()
         .expect("tools array")
         .iter()
-        .filter(|tool| tool["verified"].as_bool() == Some(true))
+        .filter(|tool| tool["runtime"].as_bool() == Some(true))
         .collect::<Vec<_>>();
     assert_eq!(internal.len(), verified.len());
 
@@ -64,10 +64,28 @@ fn internal_gap_examples_are_registered() {
 #[test]
 fn internal_reference_contains_only_verified_rows() {
     let inventory: Value =
-        serde_json::from_str(include_str!("../data/unifi_internal_reference_tools.json"))
-            .expect("internal reference inventory should parse");
+        serde_json::from_str(include_str!("../data/unifi_internal_endpoint_models.json"))
+            .expect("internal endpoint models should parse");
     for tool in inventory["tools"].as_array().expect("tools array") {
-        assert_eq!(tool["verified"].as_bool(), Some(true));
+        if tool["runtime"].as_bool() == Some(true) {
+            assert_eq!(tool["verified"].as_bool(), Some(true));
+        }
     }
     assert!(find_capability("internal_get_networks").is_none());
+}
+
+#[test]
+fn runtime_model_rows_are_exposed_and_non_runtime_rows_are_hidden() {
+    let inventory: Value =
+        serde_json::from_str(include_str!("../data/unifi_internal_endpoint_models.json"))
+            .expect("internal endpoint models should parse");
+    for tool in inventory["tools"].as_array().expect("tools array") {
+        let action = tool["action"].as_str().expect("action");
+        let capability = find_capability(action);
+        if tool["runtime"].as_bool() == Some(true) {
+            assert!(capability.is_some(), "runtime action {action} missing");
+        } else {
+            assert!(capability.is_none(), "non-runtime action {action} exposed");
+        }
+    }
 }

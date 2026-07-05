@@ -86,3 +86,14 @@ fn mcp_auth_scope_comes_from_capability_registry() {
         Some("unifi:__deny__")
     );
 }
+
+#[tokio::test]
+async fn mutating_actions_require_admin_scope() {
+    let rf_scan = rustifi::capabilities::find_capability("internal_trigger_rf_scan")
+        .expect("rf scan capability");
+    assert!(rf_scan.mutating);
+    assert_eq!(rf_scan.auth_scope.as_str(), "admin");
+
+    let clients = rustifi::capabilities::find_capability("clients").expect("clients capability");
+    assert_eq!(clients.auth_scope.as_str(), "read");
+}

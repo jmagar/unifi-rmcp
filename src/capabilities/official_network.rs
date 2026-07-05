@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::api::ApiSourceFamily;
-use crate::capabilities::Capability;
+use crate::capabilities::{AuthScope, Capability};
 
 #[derive(Debug, Deserialize)]
 struct Inventory {
@@ -33,6 +33,12 @@ pub fn capabilities() -> Vec<Capability> {
                 method: Some(operation.method),
                 path: Some(operation.path),
                 mutating,
+                auth_scope: if mutating {
+                    AuthScope::Admin
+                } else {
+                    AuthScope::Read
+                },
+                verification_mode: Some("contract_ok".to_string()),
             }
         })
         .collect()
