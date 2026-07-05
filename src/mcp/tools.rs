@@ -46,6 +46,7 @@ Set the required `action` argument to select the operation.
 - `wlans`     — WiFi network configurations
 - `health`    — Site health summary
 - `alarms`    — Active alarms and alerts
+- `events`    — Recent controller events
 - `sysinfo`   — Controller system information
 - `me`        — Authenticated user info
 

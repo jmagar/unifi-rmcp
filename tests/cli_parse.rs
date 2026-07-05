@@ -1,6 +1,9 @@
-use serde_json::json;
+//! Tests for CLI argument parsing. These tests do not make network calls —
+//! they only verify that argument strings map to the right command variants
+//! and flags are extracted correctly.
 
 use rustifi::cli::CliCommand;
+use serde_json::json;
 
 fn parse(args: &[&str]) -> anyhow::Result<(CliCommand, bool)> {
     let owned = args.iter().map(|arg| arg.to_string()).collect::<Vec<_>>();

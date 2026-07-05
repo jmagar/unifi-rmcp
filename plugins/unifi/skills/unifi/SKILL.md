@@ -3,13 +3,13 @@ name: unifi
 description: >
   Use this skill whenever the user asks about their UniFi network — connected clients, who's
   on the WiFi, which devices are online, access points, switches, gateways, network health,
-  site health, active alarms, WiFi configurations (SSIDs), controller sysinfo,
+  site health, active alarms, network events, WiFi configurations (SSIDs), controller sysinfo,
   or their authenticated UniFi identity. This skill covers the rustifi MCP server, a Rust bridge
   to official and internal UniFi APIs via X-API-KEY. Legacy convenience actions are read-only;
   mutating actions require explicit admin authorization. Trigger phrases include: "UniFi clients",
   "connected clients", "who's on the network", "UniFi devices", "access points", "APs",
   "UniFi switches", "WiFi networks", "WLAN config", "SSIDs", "network health", "UniFi health",
-  "site health", "UniFi alarms", "network alerts",
+  "site health", "UniFi alarms", "network alerts", "network events", "UniFi events",
   "sysinfo", "controller version", "UniFi me". Always use this skill rather than guessing
   at curl commands or API paths — the UniFi REST API has several gotchas around path prefixes
   and auth that this skill encodes.
@@ -107,6 +107,10 @@ unifi(action="wlans")
 unifi(action="health")
 # → data[].{subsystem, status, num_ap, num_disconnected, num_user, num_guest}
 
+# Recent controller events
+unifi(action="events", params={"limit": 25})
+# → data[] event records; limit truncates the returned array
+
 # Controller info
 unifi(action="sysinfo")
 # → data[0].{version, build, hostname, uptime, timezone}
@@ -136,6 +140,7 @@ cargo run --bin runifi -- <command>
 | `runifi wlans` | SSID / BAND / VLAN / SECURITY |
 | `runifi health` | subsystem status with AP and client counts |
 | `runifi alarms` | `[key] message` per alarm |
+| `runifi events [--limit N]` | recent controller events; optional limit truncates returned events |
 | `runifi sysinfo` | Version, Build, Hostname, Uptime, Timezone |
 | `runifi me` | Name, Email, Role, Super admin flag |
 
@@ -182,6 +187,10 @@ curl -sk "$UNIFI_URL/proxy/network/api/s/$SITE/stat/health" \
 # Alarms
 curl -sk "$UNIFI_URL/proxy/network/api/s/$SITE/rest/alarm" \
   -H "X-API-KEY: $UNIFI_API_KEY" | jq '.data[] | {key, msg}'
+
+# Events
+curl -sk "$UNIFI_URL/proxy/network/api/s/$SITE/rest/event" \
+  -H "X-API-KEY: $UNIFI_API_KEY" | jq '.data[]'
 
 # Sysinfo
 curl -sk "$UNIFI_URL/proxy/network/api/s/$SITE/stat/sysinfo" \
