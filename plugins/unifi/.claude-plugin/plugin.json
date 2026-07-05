@@ -1,6 +1,6 @@
 {
   "name": "unifi",
-  "description": "UniFi network management via MCP — monitor devices, clients, health, alarms, events, and WLANs through the rustifi MCP server.",
+  "description": "UniFi network management via MCP — official, internal, and hybrid UniFi Network actions through the rustifi MCP server.",
   "author": {
     "name": "jmagar"
   },

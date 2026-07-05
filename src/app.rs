@@ -1,6 +1,7 @@
 use anyhow::Result;
 use serde_json::Value;
 
+use crate::actions::{ActionDispatcher, ActionRequest};
 use crate::unifi::UnifiClient;
 
 /// Business service layer. All logic lives here.
@@ -47,6 +48,12 @@ impl UnifiService {
 
     pub async fn me(&self) -> Result<Value> {
         self.client.me().await
+    }
+
+    pub async fn execute(&self, request: ActionRequest) -> Result<Value> {
+        ActionDispatcher::new(self.client.config())
+            .execute(request)
+            .await
     }
 }
 

@@ -178,11 +178,13 @@ Network:
   unifi events [--limit N] [--json]     Recent events (optional limit)
   unifi sysinfo [--json]                Controller system information
   unifi me [--json]                     Authenticated user info
+  unifi <action> [--param k=v] [--body-json JSON] [--confirm] [--json]
 
 Environment:
   UNIFI_URL                     Controller base URL (required), e.g. https://unifi.local
   UNIFI_API_KEY                 API key for X-API-KEY header (required)
   UNIFI_SITE                    Site name (default: default)
+  UNIFI_SITE_ID                 Official API site UUID for live tests
   UNIFI_SKIP_TLS_VERIFY         Skip TLS cert check (default: true)
   UNIFI_LEGACY                  Legacy controller mode, no /proxy/network prefix (default: false)
   UNIFI_MCP_HOST                Bind host (default: 0.0.0.0)

@@ -16,8 +16,7 @@ description: >
 
 # UniFi Skill (rustifi)
 
-Read-only access to a UniFi network controller via the **rustifi** MCP server. All data is
-fetched from the UniFi REST API using X-API-KEY authentication.
+Access to a UniFi network controller via the **rustifi** MCP server. Data is fetched from the documented Network Integration API or internal controller APIs using X-API-KEY authentication. Mutating actions require explicit `confirm=true`.
 
 ## Quick Reference
 
@@ -33,6 +32,15 @@ unifi(action="events", limit=20)  # recent events (limit optional)
 unifi(action="sysinfo")           # controller version/uptime
 unifi(action="me")                # authenticated user info
 unifi(action="help")              # built-in documentation
+```
+
+Generated action families are also available:
+
+```
+unifi(action="official_list_clients", params={"siteId": "<uuid>"})
+unifi(action="internal_list_alarms")
+unifi(action="list_clients", params={"siteId": "<uuid>"})
+unifi(action="list_clients", params={"prefer": "internal"})
 ```
 
 ---
@@ -55,6 +63,12 @@ unifi(action="help")              # built-in documentation
 | `sysinfo` | Controller version, build, hostname, uptime, timezone | — |
 | `me` | Authenticated user info (name, email, role) | — |
 | `help` | Returns built-in action documentation | — |
+
+| family | description | extra params |
+|--------|-------------|--------------|
+| `official_*` | Documented Network Integration API under `/proxy/network/integration/v1` | path params like `siteId`, `networkId`; `query`; `body`; `confirm` for mutations |
+| `internal_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` | `query`; `body`; `confirm` for mutations |
+| hybrid actions | `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | `prefer` can be `official` or `internal` |
 
 ### Response Shape
 

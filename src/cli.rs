@@ -1,9 +1,11 @@
 pub mod doctor;
 
 use anyhow::{bail, Result};
-use serde_json::Value;
+use serde_json::{json, Value};
 
+use rustifi::actions::ActionRequest;
 use rustifi::app::UnifiService;
+use rustifi::capabilities::find_capability;
 
 // ── command enum ──────────────────────────────────────────────────────────────
 
@@ -13,10 +15,17 @@ pub enum CliCommand {
     Wlans,
     Health,
     Alarms,
-    Events { limit: Option<usize> },
+    Events {
+        limit: Option<usize>,
+    },
     Sysinfo,
     Me,
     Doctor,
+    Action {
+        action: String,
+        params: Value,
+        confirm: bool,
+    },
 }
 
 impl CliCommand {
@@ -24,7 +33,7 @@ impl CliCommand {
         let json = args.iter().any(|a| a == "--json");
         let rest: Vec<&str> = args
             .iter()
-            .filter(|a| a.as_str() != "--json")
+            .filter(|a| !matches!(a.as_str(), "--json" | "--confirm"))
             .map(String::as_str)
             .collect();
 
@@ -40,12 +49,59 @@ impl CliCommand {
             ["sysinfo"] => Self::Sysinfo,
             ["me"] => Self::Me,
             ["doctor"] => Self::Doctor,
+            [action, ..] if find_capability(action).is_some() => Self::Action {
+                action: (*action).to_string(),
+                params: parse_params(&rest)?,
+                confirm: args.iter().any(|arg| arg == "--confirm"),
+            },
             other => bail!(
                 "unknown command: {}\n\nRun `unifi --help` for usage.",
                 other.join(" ")
             ),
         };
         Ok((cmd, json))
+    }
+}
+
+fn parse_params(args: &[&str]) -> Result<Value> {
+    let mut params = json!({});
+    let mut idx = 1;
+    while idx < args.len() {
+        match args[idx] {
+            "--param" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--param requires key=value"))?;
+                let (key, raw) = value
+                    .split_once('=')
+                    .ok_or_else(|| anyhow::anyhow!("--param requires key=value"))?;
+                merge_param(&mut params, key, Value::String(raw.to_string()));
+                idx += 2;
+            }
+            "--body-json" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--body-json requires a JSON object"))?;
+                let body: Value = serde_json::from_str(value)?;
+                merge_param(&mut params, "body", body);
+                idx += 2;
+            }
+            "--limit" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--limit requires a value"))?;
+                merge_param(&mut params, "limit", json!(value.parse::<usize>()?));
+                idx += 2;
+            }
+            _ => idx += 1,
+        }
+    }
+    Ok(params)
+}
+
+fn merge_param(params: &mut Value, key: &str, value: Value) {
+    if let Some(object) = params.as_object_mut() {
+        object.insert(key.to_string(), value);
     }
 }
 
@@ -65,14 +121,28 @@ fn flag_usize(args: &[&str], flag: &str) -> Result<Option<usize>> {
 
 pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<()> {
     let (label, data) = match cmd {
-        CliCommand::Clients => ("clients", service.clients().await?),
-        CliCommand::Devices => ("devices", service.devices().await?),
-        CliCommand::Wlans => ("wlans", service.wlans().await?),
-        CliCommand::Health => ("health", service.health().await?),
-        CliCommand::Alarms => ("alarms", service.alarms().await?),
-        CliCommand::Events { limit } => ("events", service.events(limit).await?),
-        CliCommand::Sysinfo => ("sysinfo", service.sysinfo().await?),
-        CliCommand::Me => ("me", service.me().await?),
+        CliCommand::Clients => ("clients".to_string(), service.clients().await?),
+        CliCommand::Devices => ("devices".to_string(), service.devices().await?),
+        CliCommand::Wlans => ("wlans".to_string(), service.wlans().await?),
+        CliCommand::Health => ("health".to_string(), service.health().await?),
+        CliCommand::Alarms => ("alarms".to_string(), service.alarms().await?),
+        CliCommand::Events { limit } => ("events".to_string(), service.events(limit).await?),
+        CliCommand::Sysinfo => ("sysinfo".to_string(), service.sysinfo().await?),
+        CliCommand::Me => ("me".to_string(), service.me().await?),
+        CliCommand::Action {
+            action,
+            params,
+            confirm,
+        } => {
+            let data = service
+                .execute(ActionRequest {
+                    action: action.clone(),
+                    params,
+                    confirm,
+                })
+                .await?;
+            (action, data)
+        }
         CliCommand::Doctor => {
             // Doctor is intercepted in main.rs before service construction
             unreachable!("Doctor is dispatched directly in main.rs")
@@ -82,7 +152,7 @@ pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<
     if json {
         println!("{}", serde_json::to_string_pretty(&data)?);
     } else {
-        print_human(label, &data);
+        print_human(&label, &data);
     }
     Ok(())
 }
@@ -119,8 +189,8 @@ fn fmt_clients(data: &Value) {
         return;
     }
     println!(
-        "{:<20} {:<18} {:<16} {:<10} {}",
-        "HOSTNAME", "MAC", "IP", "TYPE", "SSID/PORT"
+        "{:<20} {:<18} {:<16} {:<10} SSID/PORT",
+        "HOSTNAME", "MAC", "IP", "TYPE"
     );
     for c in clients {
         let hostname = str_val_or(&c["hostname"], str_val_or(&c["name"], "--"));
@@ -155,8 +225,8 @@ fn fmt_devices(data: &Value) {
         return;
     }
     println!(
-        "{:<24} {:<12} {:<18} {:<10} {}",
-        "NAME", "TYPE", "MAC", "STATE", "IP"
+        "{:<24} {:<12} {:<18} {:<10} IP",
+        "NAME", "TYPE", "MAC", "STATE"
     );
     for d in devices {
         println!(
@@ -191,7 +261,7 @@ fn fmt_wlans(data: &Value) {
         println!("No WiFi networks configured.");
         return;
     }
-    println!("{:<32} {:<8} {:<6} {}", "SSID", "BAND", "VLAN", "SECURITY");
+    println!("{:<32} {:<8} {:<6} SECURITY", "SSID", "BAND", "VLAN");
     for w in wlans {
         let enabled = w["enabled"].as_bool().unwrap_or(false);
         let ssid = format!(

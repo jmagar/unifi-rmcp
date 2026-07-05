@@ -1,20 +1,34 @@
 use serde_json::{json, Value};
 
-pub(super) const UNIFI_ACTIONS: &[&str] = &[
-    "clients", "devices", "wlans", "health", "alarms", "events", "sysinfo", "me", "help",
-];
+use crate::capabilities::all_capabilities;
 
-pub(super) fn tool_definitions() -> Vec<Value> {
+pub fn tool_definitions() -> Vec<Value> {
+    let mut actions = all_capabilities()
+        .iter()
+        .map(|cap| cap.action.clone())
+        .collect::<Vec<_>>();
+    actions.push("help".to_string());
+    actions.sort();
+    actions.dedup();
+
     vec![json!({
         "name": "unifi",
-        "description": "Query a UniFi network controller via REST API (read-only). Use action=help for documentation.",
+        "description": "Query and manage a UniFi network controller via official, internal, and hybrid API actions. Mutating actions require confirm=true.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "action": {
                     "type": "string",
                     "description": "Operation to perform.",
-                    "enum": UNIFI_ACTIONS
+                    "enum": actions
+                },
+                "params": {
+                    "type": "object",
+                    "description": "Action-specific parameters, including path values, query, and body."
+                },
+                "confirm": {
+                    "type": "boolean",
+                    "description": "Required true for mutating actions."
                 },
                 "limit": {
                     "type": "integer",

@@ -7,7 +7,7 @@ use crate::{app::UnifiService, config::McpConfig};
 mod prompts;
 mod rmcp_server;
 mod routes;
-mod schemas;
+pub mod schemas;
 mod tools;
 
 pub use rmcp_server::{

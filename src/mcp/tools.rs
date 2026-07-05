@@ -1,5 +1,7 @@
 use serde_json::{json, Value};
 
+use crate::actions::ActionRequest;
+
 use super::AppState;
 
 /// Thin shim — parse args, call service, return Value. No logic here.
@@ -18,26 +20,39 @@ async fn dispatch(state: &AppState, args: Value) -> anyhow::Result<Value> {
     let action =
         string_arg(&args, "action").ok_or_else(|| anyhow::anyhow!("action is required"))?;
     match action.as_str() {
-        "clients" => state.service.clients().await,
-        "devices" => state.service.devices().await,
-        "wlans" => state.service.wlans().await,
-        "health" => state.service.health().await,
-        "alarms" => state.service.alarms().await,
-        "events" => {
-            let limit = usize_arg(&args, "limit")?;
-            state.service.events(limit).await
-        }
-        "sysinfo" => state.service.sysinfo().await,
-        "me" => state.service.me().await,
         "help" => Ok(json!({ "help": HELP_TEXT })),
-        other => Err(anyhow::anyhow!(
-            "unknown unifi action: {other}; use action=help for documentation"
-        )),
+        _ => {
+            let mut params = args.get("params").cloned().unwrap_or_else(|| json!({}));
+            if let Some(limit) = usize_arg(&args, "limit")? {
+                merge_param(&mut params, "limit", json!(limit));
+            }
+            let confirm = args
+                .get("confirm")
+                .and_then(Value::as_bool)
+                .unwrap_or(false);
+            state
+                .service
+                .execute(ActionRequest {
+                    action,
+                    params,
+                    confirm,
+                })
+                .await
+        }
     }
 }
 
 fn string_arg(args: &Value, name: &str) -> Option<String> {
     args.get(name).and_then(|v| v.as_str()).map(String::from)
+}
+
+fn merge_param(params: &mut Value, key: &str, value: Value) {
+    if !params.is_object() {
+        *params = json!({});
+    }
+    if let Some(object) = params.as_object_mut() {
+        object.insert(key.to_string(), value);
+    }
 }
 
 fn usize_arg(args: &Value, name: &str) -> anyhow::Result<Option<usize>> {
