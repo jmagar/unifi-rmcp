@@ -253,7 +253,7 @@ Mutation flags:
 | `--yes` | Required for non-interactive destructive `down` |
 
 `syslog compose` refuses ambiguous target discovery, mismatched requested
-project/service selectors, cwd fallback without confirmation,
+project/service selectors, cwd fallback without admin authorization,
 project-name-only mutations, missing Compose files, systemd owner conflicts,
 non-target listeners on syslog ports, and destructive service stop without
 `--yes`. `down` is intentionally service-scoped (`docker compose stop

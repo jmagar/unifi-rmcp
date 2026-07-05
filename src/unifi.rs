@@ -1,9 +1,8 @@
-use std::time::Duration;
-
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde_json::Value;
 
+use crate::api::http;
 use crate::config::UnifiConfig;
 
 /// HTTP REST client for UniFi controllers.
@@ -19,6 +18,7 @@ pub struct UnifiClient {
     pub url: String,
     api_key: String,
     site: String,
+    skip_tls_verify: bool,
     /// When true, skip `/proxy/network` prefix (legacy controllers)
     legacy: bool,
 }
@@ -37,20 +37,25 @@ impl UnifiClient {
                  UniFi Settings > API"
             );
         }
-        let client = reqwest::ClientBuilder::new()
-            .danger_accept_invalid_certs(cfg.skip_tls_verify)
-            .cookie_store(true)
-            // §43: 30-second timeout on all requests (self-signed cert + slow response)
-            .timeout(Duration::from_secs(30))
-            .build()
-            .context("failed to build HTTP client")?;
+        let client = http::client(cfg)?;
         Ok(Self {
             client,
             url: cfg.url.trim_end_matches('/').to_string(),
             api_key: cfg.api_key.clone(),
             site: cfg.site.clone(),
+            skip_tls_verify: cfg.skip_tls_verify,
             legacy: cfg.legacy,
         })
+    }
+
+    pub fn config(&self) -> UnifiConfig {
+        UnifiConfig {
+            url: self.url.clone(),
+            api_key: self.api_key.clone(),
+            site: self.site.clone(),
+            skip_tls_verify: self.skip_tls_verify,
+            legacy: self.legacy,
+        }
     }
 
     // ── path helpers ──────────────────────────────────────────────────────────
@@ -59,6 +64,14 @@ impl UnifiClient {
     fn site_path(&self, suffix: &str) -> String {
         let prefix = if self.legacy { "" } else { "/proxy/network" };
         format!("{prefix}/api/s/{site}/{suffix}", site = self.site)
+    }
+
+    fn self_path(&self) -> &'static str {
+        if self.legacy {
+            "/api/self"
+        } else {
+            "/proxy/network/api/self"
+        }
     }
 
     // ── HTTP ──────────────────────────────────────────────────────────────────
@@ -192,12 +205,11 @@ impl UnifiClient {
     }
 
     /// Authenticated user info.
-    /// Note: `/api/self` does not use the `/proxy/network` prefix on UDM.
     pub async fn me(&self) -> Result<Value> {
         let span = tracing::info_span!("upstream.me");
         let _guard = span.enter();
         tracing::debug!(url = %self.url, "calling UniFi me API");
-        let result = self.get("/api/self").await;
+        let result = self.get(self.self_path()).await;
         self.log_result(&result, "me");
         result
     }

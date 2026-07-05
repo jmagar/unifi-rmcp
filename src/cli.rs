@@ -1,9 +1,11 @@
 pub mod doctor;
 
 use anyhow::{bail, Result};
-use serde_json::Value;
+use serde_json::{json, Value};
 
-use rustifi::app::UnifiService;
+use crate::actions::ActionRequest;
+use crate::app::UnifiService;
+use crate::capabilities::find_capability;
 
 // ── command enum ──────────────────────────────────────────────────────────────
 
@@ -17,6 +19,7 @@ pub enum CliCommand {
     Sysinfo,
     Me,
     Doctor,
+    Action { action: String, params: Value },
 }
 
 impl CliCommand {
@@ -24,7 +27,7 @@ impl CliCommand {
         let json = args.iter().any(|a| a == "--json");
         let rest: Vec<&str> = args
             .iter()
-            .filter(|a| a.as_str() != "--json")
+            .filter(|a| !matches!(a.as_str(), "--json"))
             .map(String::as_str)
             .collect();
 
@@ -34,14 +37,18 @@ impl CliCommand {
             ["wlans"] => Self::Wlans,
             ["health"] => Self::Health,
             ["alarms"] => Self::Alarms,
-            ["events", ..] => Self::Events {
-                limit: flag_usize(&rest, "--limit")?,
+            ["events", rest @ ..] => Self::Events {
+                limit: parse_limit(rest)?,
             },
             ["sysinfo"] => Self::Sysinfo,
             ["me"] => Self::Me,
             ["doctor"] => Self::Doctor,
+            [action, ..] if find_capability(action).is_some() => Self::Action {
+                action: (*action).to_string(),
+                params: parse_params(&rest)?,
+            },
             other => bail!(
-                "unknown command: {}\n\nRun `unifi --help` for usage.",
+                "unknown command: {}\n\nRun `runifi --help` for usage.",
                 other.join(" ")
             ),
         };
@@ -49,30 +56,80 @@ impl CliCommand {
     }
 }
 
-fn flag_usize(args: &[&str], flag: &str) -> Result<Option<usize>> {
-    let Some(pos) = args.iter().position(|a| *a == flag) else {
-        return Ok(None);
-    };
-    let val = args
-        .get(pos + 1)
-        .ok_or_else(|| anyhow::anyhow!("{flag} requires a value"))?;
-    val.parse::<usize>()
-        .map(Some)
-        .map_err(|_| anyhow::anyhow!("{flag}: expected non-negative integer, got {val:?}"))
+fn parse_params(args: &[&str]) -> Result<Value> {
+    let mut params = json!({});
+    let mut idx = 1;
+    while idx < args.len() {
+        match args[idx] {
+            "--param" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--param requires key=value"))?;
+                let (key, raw) = value
+                    .split_once('=')
+                    .ok_or_else(|| anyhow::anyhow!("--param requires key=value"))?;
+                merge_param(&mut params, key, Value::String(raw.to_string()));
+                idx += 2;
+            }
+            "--body-json" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--body-json requires a JSON object"))?;
+                let body: Value = serde_json::from_str(value)?;
+                if !body.is_object() {
+                    bail!("--body-json requires a JSON object");
+                }
+                merge_param(&mut params, "body", body);
+                idx += 2;
+            }
+            "--limit" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| anyhow::anyhow!("--limit requires a value"))?;
+                merge_param(&mut params, "limit", json!(value.parse::<usize>()?));
+                idx += 2;
+            }
+            other => bail!("unknown argument for generated action: {other}"),
+        }
+    }
+    Ok(params)
+}
+
+fn parse_limit(args: &[&str]) -> Result<Option<usize>> {
+    match args {
+        [] => Ok(None),
+        ["--limit", value] => Ok(Some(value.parse::<usize>()?)),
+        [other, ..] => bail!("unknown argument for events: {other}"),
+    }
+}
+
+fn merge_param(params: &mut Value, key: &str, value: Value) {
+    if let Some(object) = params.as_object_mut() {
+        object.insert(key.to_string(), value);
+    }
 }
 
 // ── dispatch ──────────────────────────────────────────────────────────────────
 
 pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<()> {
     let (label, data) = match cmd {
-        CliCommand::Clients => ("clients", service.clients().await?),
-        CliCommand::Devices => ("devices", service.devices().await?),
-        CliCommand::Wlans => ("wlans", service.wlans().await?),
-        CliCommand::Health => ("health", service.health().await?),
-        CliCommand::Alarms => ("alarms", service.alarms().await?),
-        CliCommand::Events { limit } => ("events", service.events(limit).await?),
-        CliCommand::Sysinfo => ("sysinfo", service.sysinfo().await?),
-        CliCommand::Me => ("me", service.me().await?),
+        CliCommand::Clients => ("clients".to_string(), service.clients().await?),
+        CliCommand::Devices => ("devices".to_string(), service.devices().await?),
+        CliCommand::Wlans => ("wlans".to_string(), service.wlans().await?),
+        CliCommand::Health => ("health".to_string(), service.health().await?),
+        CliCommand::Alarms => ("alarms".to_string(), service.alarms().await?),
+        CliCommand::Events { limit } => ("events".to_string(), service.events(limit).await?),
+        CliCommand::Sysinfo => ("sysinfo".to_string(), service.sysinfo().await?),
+        CliCommand::Me => ("me".to_string(), service.me().await?),
+        CliCommand::Action { action, params } => {
+            let data = service
+                .execute(ActionRequest {
+                    action: action.clone(),
+                    params,
+                })
+                .await?;
+            (action, data)
+        }
         CliCommand::Doctor => {
             // Doctor is intercepted in main.rs before service construction
             unreachable!("Doctor is dispatched directly in main.rs")
@@ -82,7 +139,7 @@ pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<
     if json {
         println!("{}", serde_json::to_string_pretty(&data)?);
     } else {
-        print_human(label, &data);
+        print_human(&label, &data);
     }
     Ok(())
 }
@@ -96,7 +153,7 @@ fn print_human(cmd: &str, data: &Value) {
         "wlans" => fmt_wlans(data),
         "health" => fmt_health(data),
         "alarms" => fmt_alarms(data),
-        "events" => fmt_events(data),
+        "events" => println!("{}", serde_json::to_string_pretty(data).unwrap_or_default()),
         "sysinfo" => fmt_sysinfo(data),
         "me" => fmt_me(data),
         _ => println!("{}", serde_json::to_string_pretty(data).unwrap_or_default()),
@@ -119,8 +176,8 @@ fn fmt_clients(data: &Value) {
         return;
     }
     println!(
-        "{:<20} {:<18} {:<16} {:<10} {}",
-        "HOSTNAME", "MAC", "IP", "TYPE", "SSID/PORT"
+        "{:<20} {:<18} {:<16} {:<10} SSID/PORT",
+        "HOSTNAME", "MAC", "IP", "TYPE"
     );
     for c in clients {
         let hostname = str_val_or(&c["hostname"], str_val_or(&c["name"], "--"));
@@ -155,8 +212,8 @@ fn fmt_devices(data: &Value) {
         return;
     }
     println!(
-        "{:<24} {:<12} {:<18} {:<10} {}",
-        "NAME", "TYPE", "MAC", "STATE", "IP"
+        "{:<24} {:<12} {:<18} {:<10} IP",
+        "NAME", "TYPE", "MAC", "STATE"
     );
     for d in devices {
         println!(
@@ -191,7 +248,7 @@ fn fmt_wlans(data: &Value) {
         println!("No WiFi networks configured.");
         return;
     }
-    println!("{:<32} {:<8} {:<6} {}", "SSID", "BAND", "VLAN", "SECURITY");
+    println!("{:<32} {:<8} {:<6} SECURITY", "SSID", "BAND", "VLAN");
     for w in wlans {
         let enabled = w["enabled"].as_bool().unwrap_or(false);
         let ssid = format!(
@@ -257,26 +314,6 @@ fn fmt_alarms(data: &Value) {
         println!("[{}] {}", key, msg);
     }
     println!("\n{} alarm(s)", alarms.len());
-}
-
-fn fmt_events(data: &Value) {
-    let events = match data["data"].as_array() {
-        Some(e) => e,
-        None => {
-            println!("{}", serde_json::to_string_pretty(data).unwrap_or_default());
-            return;
-        }
-    };
-    if events.is_empty() {
-        println!("No recent events.");
-        return;
-    }
-    for e in events {
-        let key = str_val_or(&e["key"], "?");
-        let msg = str_val_or(&e["msg"], "--");
-        println!("[{}] {}", key, msg);
-    }
-    println!("\n{} event(s)", events.len());
 }
 
 fn fmt_sysinfo(data: &Value) {

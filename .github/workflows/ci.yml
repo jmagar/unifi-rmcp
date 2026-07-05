@@ -44,6 +44,12 @@ jobs:
         uses: taiki-e/install-action@nextest
       - name: Run tests
         run: cargo nextest run --profile ci
+      - name: Validate internal reference
+        run: cargo run -p xtask -- validate-internal-reference
+      - name: Verify API endpoint contracts
+        run: cargo run -p xtask -- verify-api-endpoints --mode contract
+      - name: Check repository guardrails
+        run: cargo run -p xtask -- check-forbidden-strings
 
   toml:
     name: TOML Format

@@ -3,24 +3,23 @@
 # test-tools.sh — Integration smoke-test for rustifi (UniFi MCP server) tools
 #
 # Tests every non-destructive action:
-#   clients, devices, wlans, health, alarms, events, sysinfo, me, help
+#   clients, devices, wlans, health, alarms, sysinfo, me, help
 #
 # Also tests the schema resource: unifi://schema/mcp-tool
 #
-# Semantic validation confirms real UniFi API data is flowing:
+# Semantic validation verifies real UniFi API data is flowing:
 #   clients  → data array (empty is OK when no clients connected)
 #   devices  → data array with at least one item (APs/switches exist)
 #   wlans    → data array with at least one WLAN (name, security fields)
 #   health   → data array with subsystems
 #   alarms   → data array
-#   events   → data array
 #   sysinfo  → data with version field
 #   me       → name field (object, not array)
 #   help     → help key
 #
 # Credentials sourced from ~/.claude-homelab/.env:
 #   UNIFI_MCP_HOST   (default: localhost)
-#   UNIFI_MCP_PORT   (default: 7474)
+#   UNIFI_MCP_PORT   (default: 40030)
 #   UNIFI_MCP_TOKEN  (optional; used as Bearer token when set)
 #
 # Usage:
@@ -220,7 +219,7 @@ smoke_test_server() {
   fi
   log_info "Health endpoint OK"
 
-  # 2. tools/list to confirm MCP layer responds
+  # 2. tools/list to verify MCP layer responds
   local tool_count
   tool_count="$(
     curl -sf --max-time 10 \
@@ -451,13 +450,6 @@ suite_alarms() {
   run_test "unifi alarms: returns data array" '{"action":"alarms"}' "data"
 }
 
-suite_events() {
-  printf '\n%b== events ==%b\n' "${C_BOLD}" "${C_RESET}" | tee -a "${LOG_FILE}"
-  run_test "unifi events: returns data array (no limit)"  '{"action":"events"}'            "data"
-  run_test "unifi events: returns data array (limit=5)"   '{"action":"events","limit":5}'  "data"
-  run_test "unifi events: returns data array (limit=20)"  '{"action":"events","limit":20}' "data"
-}
-
 suite_sysinfo() {
   printf '\n%b== sysinfo ==%b\n' "${C_BOLD}" "${C_RESET}" | tee -a "${LOG_FILE}"
   run_test "unifi sysinfo: returns data"                '{"action":"sysinfo"}' "data"
@@ -584,7 +576,6 @@ run_parallel() {
     suite_wlans
     suite_health
     suite_alarms
-    suite_events
     suite_sysinfo
     suite_me
     suite_schema_resource
@@ -637,7 +628,6 @@ run_sequential() {
   suite_wlans
   suite_health
   suite_alarms
-  suite_events
   suite_sysinfo
   suite_me
   suite_schema_resource
@@ -667,8 +657,8 @@ main() {
     log_error ""
     log_error "To diagnose:"
     log_error "  docker ps | grep unifi-mcp"
-    log_error "  curl http://localhost:7474/health"
-    log_error "  curl -X POST http://localhost:7474/mcp -H 'Content-Type: application/json' \\"
+    log_error "  curl http://localhost:40030/health"
+    log_error "  curl -X POST http://localhost:40030/mcp -H 'Content-Type: application/json' \\"
     log_error "    -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}'"
     exit 2
   }

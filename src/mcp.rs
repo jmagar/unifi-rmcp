@@ -7,9 +7,11 @@ use crate::{app::UnifiService, config::McpConfig};
 mod prompts;
 mod rmcp_server;
 mod routes;
-mod schemas;
+pub mod schemas;
 mod tools;
 
+#[cfg(any(test, feature = "test-support"))]
+pub use rmcp_server::required_scope_for;
 pub use rmcp_server::{
     rmcp_server, streamable_http_config, streamable_http_service, UnifiRmcpServer,
 };

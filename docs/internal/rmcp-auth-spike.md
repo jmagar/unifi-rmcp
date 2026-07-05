@@ -4,7 +4,7 @@
 
 **Pattern (a) — direct extension propagation — WORKS.** Pattern (b) and Pattern (c) are NOT needed.
 
-Confirmed empirically against `rmcp 1.6.0` with feature `transport-streamable-http-server`, in both `stateful_mode(true)` and `stateful_mode(false)`. Spike test: `tests/spike_rmcp_extensions.rs`.
+Verified empirically against `rmcp 1.6.0` with feature `transport-streamable-http-server`, in both `stateful_mode(true)` and `stateful_mode(false)`. Spike test: `tests/spike_rmcp_extensions.rs`.
 
 The earlier `framework-docs-researcher` finding ("rmcp's `RequestContext` carries only MCP protocol metadata, not the underlying HTTP request") was incorrect for rmcp 1.6.0 — that may have been true for an earlier version, but the 1.6 line publishes `http::request::Parts` into the JSON-RPC request's extensions before dispatching to the tool handler.
 

@@ -99,7 +99,7 @@ ZED_SYSLOG_TAG="zed"
 
 ### 3.4 smartd — already on by default
 
-Native syslog out of the box, `daemon.warning`, tag `smartd`. Just confirm `smartmontools` installed and `smartd` running on each Linux host.
+Native syslog out of the box, `daemon.warning`, tag `smartd`. Just verify `smartmontools` installed and `smartd` running on each Linux host.
 
 ### 3.5 BGW-320 — skip
 
@@ -410,7 +410,7 @@ trace_exporter = { otlp-http = { endpoint = "http://shart.tailnet:4318/v1/traces
 ## 7 · open questions
 
 - **libvirt logs from tootie** — try Unraid API first; fall back to imfile + User Scripts plugin if API doesn't expose them cleanly
-- **`SELECT host, count(*) FROM logs WHERE tag IN ('zed','smartd','kern')` baseline** — confirm what's already arriving before adding drop-ins
+- **`SELECT host, count(*) FROM logs WHERE tag IN ('zed','smartd','kern')` baseline** — verify what's already arriving before adding drop-ins
 - **Authelia stdout switch** — keep file-based (current plan) or strip `log.file_path` and use container stdout? Either works; file path is lower-risk to a live auth stack
 - **Vaultwarden** — verify access events present in container stdout before deciding on imfile
 - **AdGuard query log retention** — how long do "allowed" queries stay? Default to 7d unless there's a reason to keep longer

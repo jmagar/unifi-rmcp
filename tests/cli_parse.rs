@@ -1,118 +1,97 @@
-/// Tests for CLI argument parsing. These tests do not make network calls —
-/// they only verify that argument strings map to the right command variants
-/// and flags are extracted correctly.
+use serde_json::json;
 
-fn parse(args: &[&str]) -> anyhow::Result<(String, bool)> {
-    // Convert &str slice into Vec<String> as main.rs does
-    let owned: Vec<String> = args.iter().map(|s| s.to_string()).collect();
-    // We test parse indirectly: a successful parse means the command was
-    // recognised; we return (command_label, json_flag).
-    // Since CliCommand is private to the binary, we exercise the binary
-    // directly via process::Command in integration tests. Here we replicate
-    // the parsing logic inline for unit coverage.
-    parse_args(&owned)
-}
+use rustifi::cli::CliCommand;
 
-fn parse_args(args: &[String]) -> anyhow::Result<(String, bool)> {
-    let json = args.iter().any(|a| a == "--json");
-    let rest: Vec<&str> = args
-        .iter()
-        .filter(|a| a.as_str() != "--json")
-        .map(String::as_str)
-        .collect();
-
-    let label = match rest.as_slice() {
-        ["clients"] => "clients",
-        ["devices"] => "devices",
-        ["wlans"] => "wlans",
-        ["health"] => "health",
-        ["alarms"] => "alarms",
-        ["events", ..] => "events",
-        ["sysinfo"] => "sysinfo",
-        ["me"] => "me",
-        other => anyhow::bail!("unknown: {}", other.join(" ")),
-    };
-    Ok((label.to_string(), json))
+fn parse(args: &[&str]) -> anyhow::Result<(CliCommand, bool)> {
+    let owned = args.iter().map(|arg| arg.to_string()).collect::<Vec<_>>();
+    CliCommand::parse(&owned)
 }
 
 #[test]
-fn clients_parses() {
-    let (label, json) = parse(&["clients"]).unwrap();
-    assert_eq!(label, "clients");
-    assert!(!json);
+fn legacy_commands_parse() {
+    let cases = [
+        ("clients", "clients"),
+        ("devices", "devices"),
+        ("wlans", "wlans"),
+        ("health", "health"),
+        ("alarms", "alarms"),
+        ("sysinfo", "sysinfo"),
+        ("me", "me"),
+    ];
+
+    for (arg, label) in cases {
+        let (command, json) = parse(&[arg]).unwrap_or_else(|error| panic!("{arg}: {error}"));
+        assert!(!json);
+        match (label, command) {
+            ("clients", CliCommand::Clients)
+            | ("devices", CliCommand::Devices)
+            | ("wlans", CliCommand::Wlans)
+            | ("health", CliCommand::Health)
+            | ("alarms", CliCommand::Alarms)
+            | ("sysinfo", CliCommand::Sysinfo)
+            | ("me", CliCommand::Me) => {}
+            _ => panic!("{arg} parsed to wrong command"),
+        }
+    }
 }
 
 #[test]
-fn devices_parses() {
-    let (label, _) = parse(&["devices"]).unwrap();
-    assert_eq!(label, "devices");
-}
-
-#[test]
-fn wlans_parses() {
-    let (label, _) = parse(&["wlans"]).unwrap();
-    assert_eq!(label, "wlans");
-}
-
-#[test]
-fn health_parses() {
-    let (label, _) = parse(&["health"]).unwrap();
-    assert_eq!(label, "health");
-}
-
-#[test]
-fn alarms_parses() {
-    let (label, _) = parse(&["alarms"]).unwrap();
-    assert_eq!(label, "alarms");
-}
-
-#[test]
-fn events_parses() {
-    let (label, _) = parse(&["events"]).unwrap();
-    assert_eq!(label, "events");
-}
-
-#[test]
-fn events_with_limit_parses() {
-    let (label, _) = parse(&["events", "--limit", "50"]).unwrap();
-    assert_eq!(label, "events");
-}
-
-#[test]
-fn sysinfo_parses() {
-    let (label, _) = parse(&["sysinfo"]).unwrap();
-    assert_eq!(label, "sysinfo");
-}
-
-#[test]
-fn me_parses() {
-    let (label, _) = parse(&["me"]).unwrap();
-    assert_eq!(label, "me");
-}
-
-#[test]
-fn json_flag_detected() {
-    let (_, json) = parse(&["clients", "--json"]).unwrap();
-    assert!(json, "--json flag should be detected");
-}
-
-#[test]
-fn json_flag_before_command() {
-    let (label, json) = parse(&["--json", "devices"]).unwrap();
-    assert_eq!(label, "devices");
+fn events_command_parse_supports_limit() {
+    let (command, json) = parse(&["events", "--limit", "1", "--json"]).unwrap();
     assert!(json);
+    let CliCommand::Events { limit } = command else {
+        panic!("expected events command");
+    };
+    assert_eq!(limit, Some(1));
+}
+
+#[test]
+fn official_action_params_and_body_parse() {
+    let (command, json) = parse(&[
+        "official_create_network",
+        "--param",
+        "siteId=site-1",
+        "--body-json",
+        r#"{"name":"IoT"}"#,
+        "--json",
+    ])
+    .unwrap();
+
+    assert!(json);
+    let CliCommand::Action { action, params } = command else {
+        panic!("expected generated action command");
+    };
+    assert_eq!(action, "official_create_network");
+    assert_eq!(params["siteId"], "site-1");
+    assert_eq!(params["body"], json!({"name": "IoT"}));
+}
+
+#[test]
+fn hybrid_action_parse_supports_preference() {
+    let (command, json) = parse(&["list_clients", "--param", "prefer=internal", "--json"]).unwrap();
+    assert!(json);
+    let CliCommand::Action { action, params } = command else {
+        panic!("expected hybrid action command");
+    };
+    assert_eq!(action, "list_clients");
+    assert_eq!(params["prefer"], "internal");
 }
 
 #[test]
 fn unknown_command_returns_error() {
-    let result = parse(&["notacommand"]);
-    assert!(result.is_err(), "unknown command should fail");
+    assert!(parse(&["notacommand"]).is_err());
+    assert!(parse(&[]).is_err());
 }
 
 #[test]
-fn empty_args_returns_error() {
-    let result = parse(&[]);
-    assert!(result.is_err(), "empty args should fail");
+fn malformed_generated_action_args_return_errors() {
+    assert!(parse(&["official_list_clients", "--param"]).is_err());
+    assert!(parse(&["official_list_clients", "--param", "siteId"]).is_err());
+    assert!(parse(&["official_create_network", "--body-json"]).is_err());
+    assert!(parse(&["official_create_network", "--body-json", "{nope"]).is_err());
+    assert!(parse(&["official_create_network", "--body-json", "[]"]).is_err());
+    assert!(parse(&["official_list_clients", "--bogus"]).is_err());
+    assert!(parse(&["events", "--limit"]).is_err());
 }
 
 #[test]

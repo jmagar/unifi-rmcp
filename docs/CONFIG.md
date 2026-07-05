@@ -185,7 +185,7 @@ For populated databases, treat heavy migrations as a planned upgrade step:
 2. Take a WAL-safe backup with `scripts/backup.sh` or `sqlite3 /data/syslog.db ".backup /data/syslog-pre-upgrade.db"`.
 3. Start the upgraded container or binary and watch `docker compose logs -f syslog-mcp` or the relevant service log for migration start/completion lines.
 4. Wait for `curl -sf http://localhost:3100/health` to succeed.
-5. Run `syslog stats --json` or `mcporter call ... action=stats` and confirm `total_logs`, storage metrics, and `write_blocked` match expectations.
+5. Run `syslog stats --json` or `mcporter call ... action=stats` and verify `total_logs`, storage metrics, and `write_blocked` match expectations.
 
 If a migration must be abandoned, stop the new process before changing files, restore the WAL-safe backup, and restart the previous image or binary. See [runbooks/deploy.md](runbooks/deploy.md) for the full deploy checklist.
 

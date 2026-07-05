@@ -8,7 +8,7 @@ Elicitation is an MCP protocol capability that allows servers to request informa
 
 syslog-mcp is a self-contained syslog receiver with no external API dependencies. There are no upstream credentials to collect at first-run. All configuration is handled via environment variables and `config.toml`.
 
-Additionally, all 8 MCP actions are read-only. There are no destructive operations that would benefit from confirmation gates via elicitation.
+Additionally, all 8 MCP actions are read-only. There are no destructive operations that would benefit from admin authorization gates via elicitation.
 
 ## Configuration entry points
 

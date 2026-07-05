@@ -1,16 +1,18 @@
 # rustifi
 
-UniFi network MCP server — read-only REST API bridge for Ubiquiti UniFi controllers (UniFi OS / UDM and legacy).
+UniFi network MCP server — official and internal REST API bridge for Ubiquiti UniFi controllers (UniFi OS / UDM and legacy).
 
-Exposes connected clients, network devices, WiFi configurations, site health, alarms, events, and system info to MCP clients (Claude, Cursor, etc.) and as a CLI tool.
+Exposes the documented UniFi Network Integration API, preserved internal controller actions, and hybrid convenience actions to MCP clients (Claude, Cursor, etc.) and as a CLI tool.
 
 ## UniFi API Overview
 
-UniFi controllers expose a REST API. Modern UniFi OS (UDM/UDR) uses:
+UniFi controllers expose multiple REST API families. Modern UniFi OS (UDM/UDR) uses:
 
 - Base URL: `https://<controller-ip>`
 - Auth: `X-API-KEY` header (preferred, UniFi OS 3.x+)
-- Site-scoped paths: `/proxy/network/api/s/{site}/...`
+- Official Network Integration API: `/proxy/network/integration/v1/...`
+- Internal V1 site API: `/proxy/network/api/s/{site}/...`
+- Internal V2 site API: `/proxy/network/v2/api/site/{site}/...`
 
 Legacy controllers (non-UDM, port 8443) use the same paths without the `/proxy/network` prefix. Set `UNIFI_LEGACY=true` for those.
 
@@ -25,32 +27,35 @@ cp .env.example .env
 
 # 2. Run CLI
 source .env
-cargo run --bin unifi -- health
-cargo run --bin unifi -- clients
+cargo run --bin runifi -- health
+cargo run --bin runifi -- clients
 
-# 3. Run MCP HTTP server (port 7474)
-cargo run --bin unifi
+# 3. Run MCP HTTP server (port 40030)
+cargo run --bin runifi
 
 # 4. Run MCP stdio transport (for Claude Desktop, etc.)
-cargo run --bin unifi -- mcp
+cargo run --bin runifi -- mcp
 ```
 
 ## CLI Usage
 
 ```
-unifi clients [--json]                Connected wireless and wired clients
-unifi devices [--json]                Network devices: APs, switches, gateways
-unifi wlans [--json]                  WiFi network configurations
-unifi health [--json]                 Site health summary
-unifi alarms [--json]                 Active alarms and alerts
-unifi events [--limit N] [--json]     Recent events (optional limit)
-unifi sysinfo [--json]                Controller system information
-unifi me [--json]                     Authenticated user info
+runifi clients [--json]                Connected wireless and wired clients
+runifi devices [--json]                Network devices: APs, switches, gateways
+runifi wlans [--json]                  WiFi network configurations
+runifi health [--json]                 Site health summary
+runifi alarms [--json]                 Active alarms and alerts
+runifi events [--limit N] [--json]     Recent controller events
+runifi sysinfo [--json]                Controller system information
+runifi me [--json]                     Authenticated user info
+runifi official_list_clients --param siteId=<uuid> --json
+runifi official_create_network --param siteId=<uuid> --body-json '{"name":"IoT"}' --json
+runifi list_clients --param siteId=<uuid> --json
 ```
 
 ## MCP Actions
 
-The `unifi` MCP tool accepts an `action` argument:
+The `unifi` MCP tool accepts an `action` argument. Mutating actions require MCP admin authorization.
 
 | Action    | Description                              |
 |-----------|------------------------------------------|
@@ -59,10 +64,20 @@ The `unifi` MCP tool accepts an `action` argument:
 | `wlans`   | WiFi network configurations              |
 | `health`  | Site health summary                      |
 | `alarms`  | Active alarms and alerts                 |
-| `events`  | Recent events (optional `limit` integer) |
+| `events`  | Recent controller events                 |
 | `sysinfo` | Controller system information            |
 | `me`      | Authenticated user info                  |
 | `help`    | Tool documentation                       |
+
+Additional generated action families:
+
+| Family | Description |
+|---|---|
+| `official_*` | 78 documented Network Integration API operations under `/proxy/network/integration/v1`; mutating operations require admin authorization |
+| `unifi_*` | Model-backed internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` |
+| `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | Hybrid convenience actions; use internal actions by default, or official API when `siteId` or `params.prefer="official"` is supplied |
+
+Endpoint parity is accounted with `cargo run -p xtask -- verify-api-endpoints --mode contract`. See [UniFi endpoint verification](docs/unifi_endpoint_verification.md).
 
 ## Environment Variables
 
@@ -71,10 +86,11 @@ The `unifi` MCP tool accepts an `action` argument:
 | `UNIFI_URL`                 | —             | Controller base URL, e.g. `https://unifi.local` (required) |
 | `UNIFI_API_KEY`             | —             | API key for `X-API-KEY` header (required)        |
 | `UNIFI_SITE`                | `default`     | UniFi site name                                  |
+| `UNIFI_SITE_ID`             | —             | Official API site UUID used by ignored live tests only; pass `--param siteId=<uuid>` for normal `official_*` CLI calls |
 | `UNIFI_SKIP_TLS_VERIFY`     | `true`        | Skip TLS cert check (needed for self-signed)     |
 | `UNIFI_LEGACY`              | `false`       | Legacy controller mode (no `/proxy/network` prefix) |
 | `UNIFI_MCP_HOST`            | `0.0.0.0`     | MCP server bind host                             |
-| `UNIFI_MCP_PORT`            | `7474`        | MCP server bind port                             |
+| `UNIFI_MCP_PORT`            | `40030`       | MCP server bind port                             |
 | `UNIFI_MCP_TOKEN`           | —             | Static bearer token for MCP auth                 |
 | `UNIFI_MCP_NO_AUTH`         | `false`       | Disable MCP auth (loopback only)                 |
 | `UNIFI_MCP_PUBLIC_URL`      | —             | Public URL for OAuth metadata                    |
@@ -94,8 +110,11 @@ The `unifi` MCP tool accepts an `action` argument:
 
 ```
 src/
-  unifi.rs       — HTTP REST client for UniFi API
-  app.rs         — UnifiService: all business logic
+  api.rs         — official/internal API path families and shared HTTP
+  actions.rs     — registry-backed action dispatch
+  capabilities.rs — official/internal/hybrid action registry
+  unifi.rs       — legacy internal HTTP REST client
+  app.rs         — UnifiService: service boundary
   config.rs      — UnifiConfig + McpConfig
   mcp.rs         — AppState, AuthPolicy, module wiring
   mcp/tools.rs   — thin shim: parse args → call service → return Value
@@ -106,4 +125,23 @@ src/
   cli.rs         — thin shim: parse args → call service → format/print
   lib.rs         — module declarations + test helpers
   main.rs        — dispatch: serve / mcp / cli
+```
+
+## Live Smoke Tests
+
+Normal tests do not require a controller. To run ignored live tests on a local network:
+
+```bash
+UNIFI_URL=https://<gateway> \
+UNIFI_API_KEY=<network-integration-key> \
+UNIFI_SITE_ID=<uuid> \
+UNIFI_SITE=default \
+UNIFI_SKIP_TLS_VERIFY=true \
+cargo test --test live_official_smoke -- --ignored
+
+UNIFI_URL=https://<gateway> \
+UNIFI_API_KEY=<network-integration-key> \
+UNIFI_SITE=default \
+UNIFI_SKIP_TLS_VERIFY=true \
+cargo test --test live_internal_smoke -- --ignored
 ```

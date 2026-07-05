@@ -14,7 +14,9 @@ pub enum SetupCommand {
     /// Copy this binary into ~/.local/bin so it is callable as a bare command
     /// in the user's own terminal, independent of Claude Code.
     Install,
-    PluginHook { no_repair: bool },
+    PluginHook {
+        no_repair: bool,
+    },
 }
 
 impl SetupCommand {
@@ -202,7 +204,10 @@ fn apply_plugin_options() {
         ("CLAUDE_PLUGIN_OPTION_UNIFI_URL", "UNIFI_URL"),
         ("CLAUDE_PLUGIN_OPTION_UNIFI_API_KEY", "UNIFI_API_KEY"),
         ("CLAUDE_PLUGIN_OPTION_UNIFI_SITE", "UNIFI_SITE"),
-        ("CLAUDE_PLUGIN_OPTION_UNIFI_SKIP_TLS", "UNIFI_SKIP_TLS_VERIFY"),
+        (
+            "CLAUDE_PLUGIN_OPTION_UNIFI_SKIP_TLS",
+            "UNIFI_SKIP_TLS_VERIFY",
+        ),
         ("CLAUDE_PLUGIN_OPTION_UNIFI_LEGACY", "UNIFI_LEGACY"),
     ];
     for (opt, dest) in map {

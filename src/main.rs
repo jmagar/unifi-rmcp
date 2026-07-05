@@ -4,14 +4,13 @@ use std::sync::Arc;
 use rmcp::{transport::stdio, ServiceExt};
 use rustifi::{
     app::UnifiService,
+    cli,
     config::{AuthMode, Config},
     mcp::{self, AppState, AuthPolicy},
     unifi::UnifiClient,
 };
 use tracing::info;
 use tracing_subscriber::{fmt, EnvFilter};
-
-mod cli;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -162,31 +161,33 @@ async fn build_auth_policy(config: &Config) -> Result<AuthPolicy> {
 fn print_usage() {
     eprintln!(
         "Usage:
-  unifi [serve]                         Start MCP HTTP server (port 40030)
-  unifi mcp                             Start MCP stdio transport
-  unifi doctor [--json]                 Pre-flight environment check
-  unifi setup check [--json]            Check local plugin setup
-  unifi setup repair [--json]           Repair local plugin setup
-  unifi setup plugin-hook [--no-repair] [--json]
+  runifi [serve]                         Start MCP HTTP server (port 40030)
+  runifi mcp                             Start MCP stdio transport
+  runifi doctor [--json]                 Pre-flight environment check
+  runifi setup check [--json]            Check local plugin setup
+  runifi setup repair [--json]           Repair local plugin setup
+  runifi setup plugin-hook [--no-repair] [--json]
 
 Network:
-  unifi clients [--json]                Connected wireless and wired clients
-  unifi devices [--json]                Network devices: APs, switches, gateways
-  unifi wlans [--json]                  WiFi network configurations
-  unifi health [--json]                 Site health summary
-  unifi alarms [--json]                 Active alarms and alerts
-  unifi events [--limit N] [--json]     Recent events (optional limit)
-  unifi sysinfo [--json]                Controller system information
-  unifi me [--json]                     Authenticated user info
+  runifi clients [--json]                Connected wireless and wired clients
+  runifi devices [--json]                Network devices: APs, switches, gateways
+  runifi wlans [--json]                  WiFi network configurations
+  runifi health [--json]                 Site health summary
+  runifi alarms [--json]                 Active alarms and alerts
+  runifi events [--limit N] [--json]     Recent controller events
+  runifi sysinfo [--json]                Controller system information
+  runifi me [--json]                     Authenticated user info
+  runifi <action> [--param k=v] [--body-json JSON] [--json]
 
 Environment:
   UNIFI_URL                     Controller base URL (required), e.g. https://unifi.local
   UNIFI_API_KEY                 API key for X-API-KEY header (required)
   UNIFI_SITE                    Site name (default: default)
+  UNIFI_SITE_ID                 Official API site UUID for live tests
   UNIFI_SKIP_TLS_VERIFY         Skip TLS cert check (default: true)
   UNIFI_LEGACY                  Legacy controller mode, no /proxy/network prefix (default: false)
   UNIFI_MCP_HOST                Bind host (default: 0.0.0.0)
-  UNIFI_MCP_PORT                Bind port (default: 7474)
+  UNIFI_MCP_PORT                Bind port (default: 40030)
   UNIFI_MCP_TOKEN               Static bearer token for MCP auth
   UNIFI_MCP_NO_AUTH             Disable MCP auth (loopback only)
   RUST_LOG                      Log filter"
