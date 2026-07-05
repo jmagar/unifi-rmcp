@@ -1,6 +1,6 @@
 # UniFi Endpoint Verification
 
-`cargo run -p xtask -- verify-api-endpoints --mode contract` validates registry, path, auth-scope, and request-policy coverage without network access.
+`cargo run -p xtask -- verify-api-endpoints --mode contract` accounts for registry, path, auth-scope, and request-policy coverage without network access.
 
 `cargo run -p xtask -- verify-api-endpoints --mode safe_live` additionally probes safe read endpoints against a configured controller.
 

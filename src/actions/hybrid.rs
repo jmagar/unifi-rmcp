@@ -35,7 +35,7 @@ fn internal_target(action: &str) -> Option<&'static str> {
     match action {
         "list_clients" => Some("clients"),
         "list_devices" => Some("devices"),
-        "list_networks" => Some("internal_list_networks"),
+        "list_networks" => Some("unifi_list_networks"),
         "list_wifi" => Some("wlans"),
         "get_system_info" => Some("sysinfo"),
         _ => None,

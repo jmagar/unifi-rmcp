@@ -157,6 +157,58 @@ async fn hybrid_defaults_to_internal_without_site_id() {
 }
 
 #[tokio::test]
+async fn hybrid_list_networks_defaults_to_registered_internal_action() {
+    let server = CaptureServer::spawn(200, r#"{"data":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "list_networks".into(),
+            params: json!({"prefer": "internal"}),
+        })
+        .await
+        .expect("list_networks should resolve to an existing internal action");
+
+    let request = server.request();
+    assert!(request.starts_with("get /proxy/network/api/s/default/rest/networkconf "));
+}
+
+#[tokio::test]
+async fn events_action_calls_rest_event_and_applies_limit() {
+    let server = CaptureServer::spawn(200, r#"{"data":[{"id":1},{"id":2}]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    let result = dispatcher
+        .execute(ActionRequest {
+            action: "events".into(),
+            params: json!({"limit": 1}),
+        })
+        .await
+        .expect("events should succeed");
+
+    let request = server.request();
+    assert!(request.starts_with("get /proxy/network/api/s/default/rest/event "));
+    assert_eq!(result["data"].as_array().expect("data").len(), 1);
+}
+
+#[tokio::test]
+async fn generated_internal_v2_action_uses_v2_site_prefix() {
+    let server = CaptureServer::spawn(200, r#"{"data":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "unifi_list_acl_rules".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("v2 internal action should succeed");
+
+    let request = server.request();
+    assert!(request.starts_with("get /proxy/network/v2/api/site/default/acl-rules "));
+}
+
+#[tokio::test]
 async fn hybrid_uses_official_when_site_id_is_present() {
     let dispatcher = ActionDispatcher::new_for_test(test_config("https://gateway.local"));
     let result = dispatcher
@@ -176,7 +228,7 @@ fn all_hybrid_aliases_resolve_to_expected_targets() {
         ("list_devices", "devices", "official_list_devices"),
         (
             "list_networks",
-            "internal_list_networks",
+            "unifi_list_networks",
             "official_list_networks",
         ),
         ("list_wifi", "wlans", "official_list_wifi"),

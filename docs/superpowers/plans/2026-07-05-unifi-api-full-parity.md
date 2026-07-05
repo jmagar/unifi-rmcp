@@ -161,7 +161,7 @@ Modify `src/capabilities/internal_network.rs` so it reads `data/unifi_internal_e
 Run:
 
 ```bash
-cargo run -p xtask -- refresh-internal-reference
+cargo run -p xtask -- validate-internal-reference
 cargo test --test internal_endpoint_models
 ```
 
@@ -452,7 +452,7 @@ Append to `tests/tool_dispatch.rs`:
 ```rust
 #[tokio::test]
 async fn mutating_actions_require_admin_scope() {
-    let rf_scan = rustifi::capabilities::find_capability("internal_trigger_rf_scan")
+    let rf_scan = rustifi::capabilities::find_capability("unifi_trigger_rf_scan")
         .expect("rf scan capability");
     assert!(rf_scan.mutating);
     assert_eq!(rf_scan.auth_scope.as_str(), "admin");

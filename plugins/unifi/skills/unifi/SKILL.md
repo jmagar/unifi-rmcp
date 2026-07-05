@@ -38,7 +38,7 @@ Generated action families are also available:
 
 ```
 unifi(action="official_list_clients", params={"siteId": "<uuid>"})
-unifi(action="internal_list_alarms")
+unifi(action="unifi_list_alarms")
 unifi(action="list_clients", params={"siteId": "<uuid>"})
 unifi(action="list_clients", params={"prefer": "internal"})
 ```
@@ -46,7 +46,7 @@ unifi(action="list_clients", params={"prefer": "internal"})
 Action surface summary:
 
 - `official_*`: 78 documented Network Integration API operations; mutating operations require admin authorization.
-- `internal_*`: model-backed internal controller actions; only live-verified runtime rows are exposed.
+- `unifi_*`: model-backed internal controller actions; runtime rows are exposed as endpoint actions.
 - Hybrid actions: read convenience actions that choose internal by default and official when `siteId` or `prefer="official"` is supplied.
 
 ---
@@ -72,7 +72,7 @@ Action surface summary:
 | family | description | extra params |
 |--------|-------------|--------------|
 | `official_*` | Documented Network Integration API under `/proxy/network/integration/v1` | path params like `siteId`, `networkId`; `query`; `body`; admin auth for mutations |
-| `internal_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` | `query`; `body`; admin auth for mutations |
+| `unifi_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` | `query`; `body`; admin auth for mutations |
 | hybrid actions | `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | uses internal actions by default; pass `siteId` or `prefer="official"` for official API |
 
 ### Response Shape

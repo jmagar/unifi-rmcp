@@ -54,6 +54,8 @@ pub struct Report {
 pub struct Totals {
     pub total: usize,
     pub ok: usize,
+    pub requires_fixture: usize,
+    pub unsupported: usize,
     pub rejected: usize,
     pub auth_failed: usize,
     pub server_error: usize,
@@ -263,7 +265,8 @@ pub fn totals(results: &[ProbeResult]) -> Totals {
     for result in results {
         match result.status.as_str() {
             "live_ok" | "contract_ok" => totals.ok += 1,
-            "requires_fixture" | "unsupported" => {}
+            "requires_fixture" => totals.requires_fixture += 1,
+            "unsupported" => totals.unsupported += 1,
             "rejected" => totals.rejected += 1,
             "auth_failed" => totals.auth_failed += 1,
             "server_error" => totals.server_error += 1,

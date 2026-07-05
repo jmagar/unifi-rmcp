@@ -114,7 +114,7 @@ pub fn verify() -> Result<()> {
         format!("{}\n", serde_json::to_string_pretty(&report)?),
     )?;
     println!(
-        "verified {} endpoints: live_ok={} contract_ok={} requires_fixture={} rejected={} auth_failed={} server_error={} skipped={}",
+        "accounted {} endpoints: live_ok={} contract_ok={} requires_fixture={} unsupported={} rejected={} auth_failed={} server_error={} skipped={}",
         report.totals.total,
         report
             .results
@@ -131,6 +131,7 @@ pub fn verify() -> Result<()> {
             .iter()
             .filter(|result| result.status == "requires_fixture")
             .count(),
+        report.totals.unsupported,
         report.totals.rejected,
         report.totals.auth_failed,
         report.totals.server_error,

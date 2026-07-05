@@ -32,14 +32,14 @@
 | `events` | internal | `GET /rest/event` | preserved |
 | `sysinfo` | internal | `GET /stat/sysinfo` | preserved |
 | `me` | internal | `GET /proxy/network/api/self` | preserved |
-| `internal_list_alarms` | internal | `GET /rest/alarm` | generic internal dispatcher |
-| `internal_get_network_health` | internal | `GET /stat/health` | generic internal dispatcher |
-| `internal_list_networks` | internal | `GET /rest/networkconf` | generic internal dispatcher |
-| `internal_list_port_forwards` | internal | `GET /rest/portforward` | generic internal dispatcher |
-| `internal_trigger_rf_scan` | internal | `POST /cmd/devmgr` | admin-authorized generic dispatcher |
+| `unifi_list_alarms` | internal | `POST /v2/system-log/critical` | generic internal dispatcher |
+| `unifi_get_network_health` | internal | `GET /stat/health` | generic internal dispatcher |
+| `unifi_list_networks` | internal | `GET /rest/networkconf` | generic internal dispatcher |
+| `unifi_list_port_forwards` | internal | `GET /rest/portforward` | generic internal dispatcher |
+| `unifi_trigger_rf_scan` | internal | `POST /cmd/devmgr` | admin-authorized generic dispatcher |
 | `list_clients` | hybrid | official clients or `clients` | implemented |
 | `list_devices` | hybrid | official devices or `devices` | implemented |
-| `list_networks` | hybrid | official networks or `internal_list_networks` | implemented |
+| `list_networks` | hybrid | official networks or `unifi_list_networks` | implemented |
 | `list_wifi` | hybrid | official WiFi or `wlans` | implemented |
 | `get_system_info` | hybrid | official info or `sysinfo` | implemented |
 
@@ -74,7 +74,8 @@ Result interpretation:
 
 - `live_ok`: endpoint returned a 2xx response in live mode.
 - `contract_ok`: endpoint is registered, path-valid, auth-scoped, and safe by policy in contract mode.
-- `requires_fixture`: endpoint needs a concrete object ID or fixture before live probing.
+- `requires_fixture`: endpoint needs a concrete object ID or fixture before live probing; it is accounted, not live-verified.
+- `unsupported`: reference row is accounted but not exposed as a runtime endpoint.
 - `auth_failed`: API key was rejected or lacks permission.
 - `server_error`: request failed or controller returned 5xx.
 - `skipped`: endpoint was disabled by mode or request budget.

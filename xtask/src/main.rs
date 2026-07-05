@@ -12,6 +12,7 @@ fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("refresh-official-api") => official_api::refresh(),
+        Some("validate-internal-reference") => internal_reference::refresh(),
         Some("refresh-internal-reference") => internal_reference::refresh(),
         Some("verify-api-endpoints") => verify_endpoints::verify(),
         Some("check-forbidden-strings") => forbidden_strings::check(),
@@ -20,10 +21,10 @@ fn main() -> Result<()> {
         Some("symlink-docs") => symlink_docs(),
         Some("check-env") => check_env(),
         Some(cmd) => bail!(
-            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
+            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, validate-internal-reference, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
         ),
         None => bail!(
-            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
+            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, validate-internal-reference, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
         ),
     }
 }
