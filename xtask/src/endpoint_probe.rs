@@ -34,15 +34,18 @@ pub struct InternalTool {
     pub title: String,
     pub mutating: bool,
     pub verified: bool,
+    #[serde(default)]
+    pub runtime: bool,
+    #[serde(default)]
+    pub verification_mode: Option<String>,
+    #[serde(default)]
+    pub auth_scope: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Report {
     pub generated_at: String,
     pub mode: String,
-    pub base_url: String,
-    pub site: String,
-    pub site_id: Option<String>,
     pub totals: Totals,
     pub results: Vec<ProbeResult>,
 }
@@ -81,6 +84,9 @@ pub struct Config {
     pub legacy: bool,
     pub include_mutating: bool,
     pub verify_unverified_internal: bool,
+    pub max_requests: usize,
+    pub timeout_secs: u64,
+    pub rate_limit_ms: u64,
 }
 
 impl Config {
@@ -96,8 +102,11 @@ impl Config {
             env_bool("UNIFI_ALLOW_INSECURE_TLS", true),
         );
         let legacy = env_bool("UNIFI_LEGACY", false);
-        let include_mutating = env_bool("UNIFI_VERIFY_MUTATING", true);
-        let verify_unverified_internal = env_bool("UNIFI_VERIFY_UNVERIFIED_INTERNAL", true);
+        let include_mutating = env_bool("UNIFI_VERIFY_MUTATING", false);
+        let verify_unverified_internal = env_bool("UNIFI_VERIFY_UNVERIFIED_INTERNAL", false);
+        let max_requests = env_usize("UNIFI_VERIFY_MAX_REQUESTS", 200);
+        let timeout_secs = env_u64("UNIFI_VERIFY_TIMEOUT_SECS", 12);
+        let rate_limit_ms = env_u64("UNIFI_VERIFY_RATE_LIMIT_MS", 0);
 
         Ok(Self {
             base_url,
@@ -108,6 +117,9 @@ impl Config {
             legacy,
             include_mutating,
             verify_unverified_internal,
+            max_requests,
+            timeout_secs,
+            rate_limit_ms,
         })
     }
 }
@@ -235,7 +247,7 @@ pub fn inert_body(name: &str, title: &str) -> Value {
 
 pub fn classify_status(status: u16) -> (&'static str, &'static str) {
     match status {
-        200..=299 => ("ok", "ok"),
+        200..=299 => ("live_ok", "live_ok"),
         400 | 404 | 405 | 409 | 422 => ("route_reached_rejected_probe", "rejected"),
         401 | 403 => ("auth_or_permission_failed", "auth_failed"),
         500..=599 => ("server_error", "server_error"),
@@ -250,7 +262,7 @@ pub fn totals(results: &[ProbeResult]) -> Totals {
     };
     for result in results {
         match result.status.as_str() {
-            "ok" => totals.ok += 1,
+            "live_ok" | "contract_ok" | "requires_fixture" => totals.ok += 1,
             "rejected" => totals.rejected += 1,
             "auth_failed" => totals.auth_failed += 1,
             "server_error" => totals.server_error += 1,
@@ -285,7 +297,7 @@ pub fn skipped(
 
 pub fn detail(text: String) -> String {
     let compact = text.split_whitespace().collect::<Vec<_>>().join(" ");
-    compact.chars().take(240).collect()
+    compact.chars().take(1024).collect()
 }
 
 pub fn timestamp() -> String {
@@ -311,6 +323,20 @@ fn env_bool(name: &str, default: bool) -> bool {
                 "1" | "true" | "yes" | "on"
             )
         })
+        .unwrap_or(default)
+}
+
+fn env_usize(name: &str, default: usize) -> usize {
+    std::env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(default)
+}
+
+fn env_u64(name: &str, default: u64) -> u64 {
+    std::env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
         .unwrap_or(default)
 }
 

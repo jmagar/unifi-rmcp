@@ -1,4 +1,5 @@
 mod endpoint_probe;
+mod forbidden_strings;
 mod internal_reference;
 mod official_api;
 mod verify_endpoints;
@@ -12,15 +13,16 @@ fn main() -> Result<()> {
         Some("refresh-official-api") => official_api::refresh(),
         Some("refresh-internal-reference") => internal_reference::refresh(),
         Some("verify-api-endpoints") => verify_endpoints::verify(),
+        Some("check-forbidden-strings") => forbidden_strings::check(),
         Some("dist") => dist(),
         Some("ci") => ci(),
         Some("symlink-docs") => symlink_docs(),
         Some("check-env") => check_env(),
         Some(cmd) => bail!(
-            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, dist, ci, symlink-docs, check-env"
+            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
         ),
         None => bail!(
-            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, dist, ci, symlink-docs, check-env"
+            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, check-forbidden-strings, dist, ci, symlink-docs, check-env"
         ),
     }
 }
