@@ -4,14 +4,13 @@ use std::sync::Arc;
 use rmcp::{transport::stdio, ServiceExt};
 use rustifi::{
     app::UnifiService,
+    cli,
     config::{AuthMode, Config},
     mcp::{self, AppState, AuthPolicy},
     unifi::UnifiClient,
 };
 use tracing::info;
 use tracing_subscriber::{fmt, EnvFilter};
-
-mod cli;
 
 #[tokio::main]
 async fn main() -> Result<()> {

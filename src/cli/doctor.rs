@@ -11,7 +11,7 @@ use std::{
 
 use serde::Serialize;
 
-use rustifi::config::{default_data_dir, Config};
+use crate::config::{default_data_dir, Config};
 
 // ── check record ──────────────────────────────────────────────────────────────
 

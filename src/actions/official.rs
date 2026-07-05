@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Result};
 use reqwest::Method;
-use serde_json::Value;
+use serde_json::{Number, Value};
 
 use crate::api::{http, official::OfficialNetworkApi, ApiSourceFamily};
 use crate::capabilities::Capability;
@@ -55,10 +55,8 @@ fn substitute_path(action: &str, template: &str, params: &Value) -> Result<Strin
     ] {
         let needle = format!("{{{key}}}");
         if path.contains(&needle) {
-            let Some(value) = params.get(key).and_then(Value::as_str) else {
-                bail!("missing required path parameter: {key}");
-            };
-            path = path.replace(&needle, value);
+            let value = path_scalar(action, params, key)?;
+            path = path.replace(&needle, &encode_path_segment(&value));
         }
     }
     if path.contains("*path") {
@@ -69,6 +67,38 @@ fn substitute_path(action: &str, template: &str, params: &Value) -> Result<Strin
         path = path.replace("*path", value.trim_start_matches('/'));
     }
     Ok(path)
+}
+
+fn path_scalar(action: &str, params: &Value, key: &str) -> Result<String> {
+    match params.get(key) {
+        Some(Value::String(value)) => Ok(value.clone()),
+        Some(Value::Number(value)) => Ok(number_to_string(value)),
+        Some(Value::Bool(value)) => Ok(value.to_string()),
+        Some(_) => bail!("{action} path parameter {key} must be a string, number, or boolean"),
+        None => bail!("missing required path parameter: {key}"),
+    }
+}
+
+fn number_to_string(value: &Number) -> String {
+    value
+        .as_i64()
+        .map(|v| v.to_string())
+        .or_else(|| value.as_u64().map(|v| v.to_string()))
+        .or_else(|| value.as_f64().map(|v| v.to_string()))
+        .unwrap_or_else(|| value.to_string())
+}
+
+fn encode_path_segment(value: &str) -> String {
+    let mut encoded = String::with_capacity(value.len());
+    for byte in value.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => {
+                encoded.push(byte as char);
+            }
+            _ => encoded.push_str(&format!("%{byte:02X}")),
+        }
+    }
+    encoded
 }
 
 fn validate_connector_path(action: &str, path: &str) -> Result<()> {

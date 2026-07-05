@@ -65,3 +65,24 @@ async fn unknown_tool_name_returns_error() {
     let result = rustifi::testing::call_tool(&state, "unknown_tool", args).await;
     assert!(result.is_err(), "unknown tool name should return an error");
 }
+
+#[test]
+fn mcp_auth_scope_comes_from_capability_registry() {
+    assert_eq!(rustifi::mcp::required_scope_for("help"), None);
+    assert_eq!(
+        rustifi::mcp::required_scope_for("official_list_clients"),
+        Some("unifi:read")
+    );
+    assert_eq!(
+        rustifi::mcp::required_scope_for("internal_list_networks"),
+        Some("unifi:read")
+    );
+    assert_eq!(
+        rustifi::mcp::required_scope_for("official_create_network"),
+        Some("unifi:__deny__")
+    );
+    assert_eq!(
+        rustifi::mcp::required_scope_for("missing_action"),
+        Some("unifi:__deny__")
+    );
+}

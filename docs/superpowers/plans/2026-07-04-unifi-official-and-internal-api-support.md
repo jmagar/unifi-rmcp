@@ -309,12 +309,12 @@ Create `docs/unifi_api_coverage.md` with sections:
 
 - `official`: documented Network Integration API under `/proxy/network/integration/v1`.
 - `internal`: undocumented Network controller APIs under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}`.
-- `hybrid`: action can prefer official API but needs internal fallback for fields or behavior missing from official responses.
+- `hybrid`: action uses internal routes by default and selects official API when `siteId` or `prefer="official"` is supplied.
 
 ## Initial Coverage
 
 - Official Network operations targeted: 78.
-- Internal Network capabilities targeted: 180.
+- Internal Network reference rows captured: 180; verified runtime capabilities: 16.
 - Existing rustifi actions preserved: clients, devices, wlans, health, alarms, events, sysinfo, me.
 ```
 

@@ -14,6 +14,7 @@ async fn official_smoke_actions() {
         ("official_get_info", json!({})),
         ("official_list_sites", json!({})),
         ("official_list_clients", json!({ "siteId": site_id })),
+        ("official_list_devices", json!({ "siteId": site_id })),
     ] {
         dispatcher
             .execute(ActionRequest {

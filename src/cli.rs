@@ -3,9 +3,9 @@ pub mod doctor;
 use anyhow::{bail, Result};
 use serde_json::{json, Value};
 
-use rustifi::actions::ActionRequest;
-use rustifi::app::UnifiService;
-use rustifi::capabilities::find_capability;
+use crate::actions::ActionRequest;
+use crate::app::UnifiService;
+use crate::capabilities::find_capability;
 
 // ── command enum ──────────────────────────────────────────────────────────────
 

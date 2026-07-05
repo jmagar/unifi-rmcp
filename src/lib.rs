@@ -2,6 +2,7 @@ pub mod actions;
 pub mod api;
 pub mod app;
 pub mod capabilities;
+pub mod cli;
 pub mod config;
 pub mod mcp;
 pub mod setup;

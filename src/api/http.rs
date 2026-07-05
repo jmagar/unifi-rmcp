@@ -29,8 +29,11 @@ pub async fn request_json(
         .header("X-API-KEY", &cfg.api_key)
         .header("Accept", "application/json");
 
-    if let Some(query) = query.and_then(Value::as_object) {
-        request = request.query(&query);
+    if let Some(query) = query {
+        let query = query
+            .as_object()
+            .ok_or_else(|| anyhow::anyhow!("query must be a JSON object"))?;
+        request = request.query(query);
     }
     if let Some(body) = body {
         request = request.json(body);
@@ -63,7 +66,15 @@ pub async fn request_json(
     }
 
     let value = if bytes.is_empty() {
-        json!({ "success": true })
+        if method == Method::GET {
+            anyhow::bail!("UniFi returned an empty body for {method} {url}");
+        }
+        json!({
+            "success": true,
+            "status": status.as_u16(),
+            "method": method.as_str(),
+            "path": path,
+        })
     } else {
         serde_json::from_slice::<Value>(&bytes)
             .with_context(|| format!("failed to parse JSON response from {url}"))?

@@ -2,15 +2,17 @@ use anyhow::{bail, Result};
 use serde_json::{json, Value};
 
 pub fn resolve(action: &str, params: &Value) -> Result<(&'static str, Value)> {
-    let prefer_internal = params
+    let prefer = params
         .get("prefer")
         .and_then(Value::as_str)
-        .map(|prefer| prefer.eq_ignore_ascii_case("internal"))
-        .unwrap_or(false);
-    let target = if prefer_internal {
-        internal_target(action)
-    } else {
-        official_target(action)
+        .map(str::to_ascii_lowercase);
+    let has_site_id = params.get("siteId").is_some();
+    let target = match prefer.as_deref() {
+        Some("official") => official_target(action),
+        Some("internal") => internal_target(action),
+        Some(other) => bail!("unknown hybrid preference: {other}"),
+        None if has_site_id => official_target(action),
+        None => internal_target(action),
     };
     let Some(target) = target else {
         bail!("unknown hybrid action: {action}");

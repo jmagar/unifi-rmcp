@@ -18,9 +18,9 @@
     "server_url": {
       "type": "string",
       "title": "Server URL",
-      "description": "Base URL the MCP client connects to. Keep the default http://localhost:7474 if running locally, or set to the remote server address (e.g. http://unifi-mcp.lan:7474). Must include the scheme and port; do NOT include a trailing /mcp path.",
+      "description": "Base URL the MCP client connects to. Keep the default http://localhost:40030 if running locally, or set to the remote server address (e.g. http://unifi-mcp.lan:40030). Must include the scheme and port; do NOT include a trailing /mcp path.",
       "required": true,
-      "default": "http://localhost:7474"
+      "default": "http://localhost:40030"
     },
     "api_token": {
       "type": "string",
@@ -72,7 +72,7 @@
     "use_docker": {
       "type": "boolean",
       "title": "Deploy with Docker",
-      "description": "True: run via the bundled docker compose stack (containerized, easier to upgrade, exposes port 7474, mounts /data volume). False: run the bundled binary directly — you are responsible for starting and managing it.",
+      "description": "True: run via the bundled docker compose stack (containerized, easier to upgrade, exposes port 40030, mounts /data volume). False: run the bundled binary directly — you are responsible for starting and managing it.",
       "required": true,
       "default": false
     },

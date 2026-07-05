@@ -15,6 +15,7 @@ struct Tool {
     path: String,
     title: String,
     mutating: bool,
+    verified: bool,
 }
 
 pub fn capabilities() -> Vec<Capability> {
@@ -25,6 +26,7 @@ pub fn capabilities() -> Vec<Capability> {
     let mut caps = inventory
         .tools
         .into_iter()
+        .filter(|tool| tool.verified)
         .map(|tool| Capability {
             action: tool.action,
             title: tool.title,

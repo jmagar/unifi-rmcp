@@ -16,16 +16,13 @@ use rmcp::{
 };
 use serde_json::{Map, Value};
 
+use crate::capabilities::find_capability;
 use crate::config::McpConfig;
 
 use super::{prompts, schemas::tool_definitions, tools::execute_tool, AppState, AuthPolicy};
 
 const READ_SCOPE: &str = "unifi:read";
 const DENY_SCOPE: &str = "unifi:__deny__";
-
-const READ_ONLY_ACTIONS: &[&str] = &[
-    "clients", "devices", "wlans", "health", "alarms", "events", "sysinfo", "me",
-];
 
 #[derive(Clone)]
 pub struct UnifiRmcpServer {
@@ -305,13 +302,14 @@ fn check_scope(auth: &AuthContext, required_scope: &str, action: &str) -> Result
     ))
 }
 
-fn required_scope_for(action: &str) -> Option<&'static str> {
+pub fn required_scope_for(action: &str) -> Option<&'static str> {
     if action == "help" {
         None
-    } else if READ_ONLY_ACTIONS.contains(&action) {
-        Some(READ_SCOPE)
     } else {
-        Some(DENY_SCOPE)
+        find_capability(action)
+            .filter(|capability| !capability.mutating)
+            .map(|_| READ_SCOPE)
+            .or(Some(DENY_SCOPE))
     }
 }
 

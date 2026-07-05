@@ -30,7 +30,7 @@ source .env
 cargo run --bin runifi -- health
 cargo run --bin runifi -- clients
 
-# 3. Run MCP HTTP server (port 7474)
+# 3. Run MCP HTTP server (port 40030)
 cargo run --bin runifi
 
 # 4. Run MCP stdio transport (for Claude Desktop, etc.)
@@ -40,17 +40,17 @@ cargo run --bin runifi -- mcp
 ## CLI Usage
 
 ```
-unifi clients [--json]                Connected wireless and wired clients
-unifi devices [--json]                Network devices: APs, switches, gateways
-unifi wlans [--json]                  WiFi network configurations
-unifi health [--json]                 Site health summary
-unifi alarms [--json]                 Active alarms and alerts
-unifi events [--limit N] [--json]     Recent events (optional limit)
-unifi sysinfo [--json]                Controller system information
-unifi me [--json]                     Authenticated user info
-unifi official_list_clients --param siteId=<uuid> --json
-unifi official_create_network --param siteId=<uuid> --body-json '{"name":"IoT"}' --confirm --json
-unifi list_clients --param siteId=<uuid> --json
+runifi clients [--json]                Connected wireless and wired clients
+runifi devices [--json]                Network devices: APs, switches, gateways
+runifi wlans [--json]                  WiFi network configurations
+runifi health [--json]                 Site health summary
+runifi alarms [--json]                 Active alarms and alerts
+runifi events [--limit N] [--json]     Recent events (optional limit)
+runifi sysinfo [--json]                Controller system information
+runifi me [--json]                     Authenticated user info
+runifi official_list_clients --param siteId=<uuid> --json
+runifi official_create_network --param siteId=<uuid> --body-json '{"name":"IoT"}' --confirm --json
+runifi list_clients --param siteId=<uuid> --json
 ```
 
 ## MCP Actions
@@ -75,7 +75,7 @@ Additional generated action families:
 |---|---|
 | `official_*` | Documented Network Integration API under `/proxy/network/integration/v1` |
 | `internal_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` |
-| `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | Hybrid convenience actions; prefer official API unless `params.prefer="internal"` |
+| `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | Hybrid convenience actions; use internal actions by default, or official API when `siteId` or `params.prefer="official"` is supplied |
 
 ## Environment Variables
 
@@ -88,7 +88,7 @@ Additional generated action families:
 | `UNIFI_SKIP_TLS_VERIFY`     | `true`        | Skip TLS cert check (needed for self-signed)     |
 | `UNIFI_LEGACY`              | `false`       | Legacy controller mode (no `/proxy/network` prefix) |
 | `UNIFI_MCP_HOST`            | `0.0.0.0`     | MCP server bind host                             |
-| `UNIFI_MCP_PORT`            | `7474`        | MCP server bind port                             |
+| `UNIFI_MCP_PORT`            | `40030`       | MCP server bind port                             |
 | `UNIFI_MCP_TOKEN`           | —             | Static bearer token for MCP auth                 |
 | `UNIFI_MCP_NO_AUTH`         | `false`       | Disable MCP auth (loopback only)                 |
 | `UNIFI_MCP_PUBLIC_URL`      | —             | Public URL for OAuth metadata                    |

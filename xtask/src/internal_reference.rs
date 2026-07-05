@@ -2,7 +2,7 @@ use anyhow::{Result, bail};
 use serde::Serialize;
 
 const OUTPUT: &str = "data/unifi_internal_reference_tools.json";
-const SOURCE: &str = "https://pypi.org/project/unifi-network-mcp/";
+const SOURCE: &str = "curated-local-internal-network-reference";
 
 #[derive(Debug, Serialize)]
 struct InternalTool {
@@ -11,6 +11,7 @@ struct InternalTool {
     path: String,
     title: String,
     mutating: bool,
+    verified: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -46,6 +47,13 @@ fn curated_tools() -> Vec<InternalTool> {
         ("events", "GET", "/rest/event", "Events", false),
         ("sysinfo", "GET", "/stat/sysinfo", "System Info", false),
         ("me", "GET", "/api/self", "Authenticated User", false),
+        (
+            "internal_list_networks",
+            "GET",
+            "/rest/networkconf",
+            "List Networks",
+            false,
+        ),
         (
             "internal_list_alarms",
             "GET",
@@ -104,6 +112,7 @@ fn curated_tools() -> Vec<InternalTool> {
             path: path.to_string(),
             title: title.to_string(),
             mutating,
+            verified: true,
         })
         .collect::<Vec<_>>();
 
@@ -195,6 +204,7 @@ fn curated_tools() -> Vec<InternalTool> {
                     path: format!("{prefix}/{batch}/{noun}"),
                     title: title_case(&format!("{verb} {noun}")),
                     mutating,
+                    verified: false,
                 });
             }
         }

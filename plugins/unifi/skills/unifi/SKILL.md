@@ -68,13 +68,15 @@ unifi(action="list_clients", params={"prefer": "internal"})
 |--------|-------------|--------------|
 | `official_*` | Documented Network Integration API under `/proxy/network/integration/v1` | path params like `siteId`, `networkId`; `query`; `body`; `confirm` for mutations |
 | `internal_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` | `query`; `body`; `confirm` for mutations |
-| hybrid actions | `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | `prefer` can be `official` or `internal` |
+| hybrid actions | `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | uses internal actions by default; pass `siteId` or `prefer="official"` for official API |
 
 ### Response Shape
 
-All actions return: `{"meta": {"rc": "ok"}, "data": [...]}`
+Internal controller actions usually return: `{"meta": {"rc": "ok"}, "data": [...]}`
 
 Always index into `["data"]` for the actual records.
+
+Official `official_*` actions return the documented Network Integration API response shape for that endpoint. Hybrid actions return the shape of whichever family they resolve to.
 
 **Exception — `me`:** Returns `{"data": {...}}` (object, not array). The `/api/self` endpoint
 it calls does not use the `/proxy/network` prefix — this is intentional and unique to this action.
@@ -233,6 +235,6 @@ omit the `/proxy/network` prefix entirely.
 | `UNIFI_SITE` | Site name | `default` |
 | `UNIFI_SKIP_TLS_VERIFY` | Skip TLS certificate check | `true` |
 | `UNIFI_LEGACY` | Omit `/proxy/network` prefix (legacy controllers) | `false` |
-| `UNIFI_MCP_PORT` | MCP server bind port | `7474` |
+| `UNIFI_MCP_PORT` | MCP server bind port | `40030` |
 | `UNIFI_MCP_TOKEN` | Static bearer token for MCP auth | — |
 | `UNIFI_MCP_NO_AUTH` | Disable MCP auth (loopback only) | — |
