@@ -413,7 +413,9 @@ fn official_contract_status(mutating: bool, path: &str) -> &'static str {
 }
 
 fn requires_fixture(path: &str) -> bool {
-    path.contains('{') && path.replace("{siteId}", "").contains('{')
+    let needs_path_fixture = path.contains('{') && path.replace("{siteId}", "").contains('{');
+    let needs_query_fixture = matches!(path, "/v1/sites/{siteId}/firewall/policies/ordering");
+    needs_path_fixture || needs_query_fixture
 }
 
 fn rate_limit(cfg: &Config) {
