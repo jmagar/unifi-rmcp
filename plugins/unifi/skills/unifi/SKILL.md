@@ -43,6 +43,12 @@ unifi(action="list_clients", params={"siteId": "<uuid>"})
 unifi(action="list_clients", params={"prefer": "internal"})
 ```
 
+Action surface summary:
+
+- `official_*`: 78 documented Network Integration API operations; mutating operations require admin authorization.
+- `internal_*`: model-backed internal controller actions; only live-verified runtime rows are exposed.
+- Hybrid actions: read convenience actions that choose internal by default and official when `siteId` or `prefer="official"` is supplied.
+
 ---
 
 ## Tier 1 — MCP Tool (preferred)

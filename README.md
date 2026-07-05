@@ -71,9 +71,11 @@ Additional generated action families:
 
 | Family | Description |
 |---|---|
-| `official_*` | Documented Network Integration API under `/proxy/network/integration/v1` |
-| `internal_*` | Internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` |
+| `official_*` | 78 documented Network Integration API operations under `/proxy/network/integration/v1`; mutating operations require admin authorization |
+| `internal_*` | Model-backed internal controller-compatible actions under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}` |
 | `list_clients`, `list_devices`, `list_networks`, `list_wifi`, `get_system_info` | Hybrid convenience actions; use internal actions by default, or official API when `siteId` or `params.prefer="official"` is supplied |
+
+Endpoint parity is verified with `cargo run -p xtask -- verify-api-endpoints --mode contract`. See [UniFi endpoint verification](docs/unifi_endpoint_verification.md).
 
 ## Environment Variables
 
