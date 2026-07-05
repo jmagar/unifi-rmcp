@@ -7,12 +7,12 @@
     "url": "https://github.com/jmagar/rustifi",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/jmagar/rustifi:0.1.0",
-      "version": "0.1.0",
+      "identifier": "ghcr.io/jmagar/rustifi:0.1.1",
+      "version": "0.1.1",
       "environmentVariables": [
         {
           "name": "UNIFI_URL",

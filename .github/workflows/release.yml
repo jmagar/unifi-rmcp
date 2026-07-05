@@ -1,12 +1,18 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to upload artifacts to"
+        required: true
 
 env:
   CARGO_TERM_COLOR: always
+  BINARY_NAME: runifi
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
 
 jobs:
   build-binaries:
@@ -17,13 +23,13 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-            artifact: unifi
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
-            artifact: unifi
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -40,12 +46,13 @@ jobs:
       - name: Build release binary
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-        run: cargo build --release --locked --target ${{ matrix.target }}
+        run: cargo build --release --locked --target ${{ matrix.target }} --bin ${{ env.BINARY_NAME }}
 
       - name: Stage binary
         run: |
           mkdir -p staging
-          cp target/${{ matrix.target }}/release/${{ matrix.artifact }} staging/${{ matrix.artifact }}-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/${{ env.BINARY_NAME }} staging/${{ env.BINARY_NAME }}-${{ matrix.target }}
+          chmod +x staging/${{ env.BINARY_NAME }}-${{ matrix.target }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -60,36 +67,18 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: true
-
       - uses: actions/download-artifact@v4
         with:
           path: artifacts/
           merge-multiple: true
 
-      - name: Configure Git LFS
+      - name: Generate checksums
         run: |
-          git lfs install
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cd artifacts
+          artifacts=(./"${BINARY_NAME}"-*)
+          sha256sum "${artifacts[@]}" > SHA256SUMS
 
-      - name: Copy linux/amd64 binary to bin/
-        run: |
-          mkdir -p bin
-          cp artifacts/unifi-x86_64-unknown-linux-gnu bin/unifi
-          chmod +x bin/unifi
-
-      - name: Commit bin/ via LFS
-        run: |
-          git add bin/unifi
-          git diff --cached --quiet || git commit -m "ci: update bin/unifi for ${{ github.ref_name }}"
-          git push origin HEAD:main || true
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*
-          generate_release_notes: true
-          tag_name: ${{ github.ref_name }}
+      - name: Upload artifacts to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${RELEASE_TAG}" ./artifacts/* --clobber
