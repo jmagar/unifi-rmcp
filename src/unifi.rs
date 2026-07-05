@@ -66,6 +66,14 @@ impl UnifiClient {
         format!("{prefix}/api/s/{site}/{suffix}", site = self.site)
     }
 
+    fn self_path(&self) -> &'static str {
+        if self.legacy {
+            "/api/self"
+        } else {
+            "/proxy/network/api/self"
+        }
+    }
+
     // ── HTTP ──────────────────────────────────────────────────────────────────
 
     async fn get(&self, path: &str) -> Result<Value> {
@@ -197,12 +205,11 @@ impl UnifiClient {
     }
 
     /// Authenticated user info.
-    /// Note: `/api/self` does not use the `/proxy/network` prefix on UDM.
     pub async fn me(&self) -> Result<Value> {
         let span = tracing::info_span!("upstream.me");
         let _guard = span.enter();
         tracing::debug!(url = %self.url, "calling UniFi me API");
-        let result = self.get("/api/self").await;
+        let result = self.get(self.self_path()).await;
         self.log_result(&result, "me");
         result
     }

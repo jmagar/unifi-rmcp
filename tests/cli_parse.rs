@@ -36,13 +36,6 @@ fn legacy_commands_parse() {
 }
 
 #[test]
-fn events_limit_and_json_parse() {
-    let (command, json) = parse(&["--json", "events", "--limit", "50"]).unwrap();
-    assert!(json);
-    assert!(matches!(command, CliCommand::Events { limit: Some(50) }));
-}
-
-#[test]
 fn official_action_params_and_body_parse() {
     let (command, json) = parse(&[
         "official_create_network",
@@ -89,7 +82,6 @@ fn malformed_generated_action_args_return_errors() {
     assert!(parse(&["official_create_network", "--body-json", "[]"]).is_err());
     assert!(parse(&["official_list_clients", "--bogus"]).is_err());
     assert!(parse(&["events", "--limit"]).is_err());
-    assert!(parse(&["events", "--limit", "-1"]).is_err());
 }
 
 #[test]

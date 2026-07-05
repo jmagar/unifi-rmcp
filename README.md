@@ -45,7 +45,6 @@ runifi devices [--json]                Network devices: APs, switches, gateways
 runifi wlans [--json]                  WiFi network configurations
 runifi health [--json]                 Site health summary
 runifi alarms [--json]                 Active alarms and alerts
-runifi events [--limit N] [--json]     Recent events (optional limit)
 runifi sysinfo [--json]                Controller system information
 runifi me [--json]                     Authenticated user info
 runifi official_list_clients --param siteId=<uuid> --json
@@ -64,7 +63,6 @@ The `unifi` MCP tool accepts an `action` argument. Mutating actions require MCP 
 | `wlans`   | WiFi network configurations              |
 | `health`  | Site health summary                      |
 | `alarms`  | Active alarms and alerts                 |
-| `events`  | Recent events (optional `limit` integer) |
 | `sysinfo` | Controller system information            |
 | `me`      | Authenticated user info                  |
 | `help`    | Tool documentation                       |

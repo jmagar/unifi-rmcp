@@ -51,7 +51,11 @@ async fn execute_generic(
         .ok_or_else(|| anyhow::anyhow!("internal action {} has no path", capability.action))?;
     let api = InternalNetworkApi::new(&cfg.url, &cfg.site, cfg.legacy);
     let full_path = if path == "/api/self" {
-        path.to_string()
+        if cfg.legacy {
+            path.to_string()
+        } else {
+            "/proxy/network/api/self".to_string()
+        }
     } else if let Some(suffix) = path.strip_prefix("/v2/") {
         api.v2_site_path(suffix.trim_start_matches("api/site/{site}/"))
     } else {

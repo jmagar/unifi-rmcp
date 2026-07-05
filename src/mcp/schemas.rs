@@ -25,11 +25,6 @@ pub fn tool_definitions() -> Vec<Value> {
                 "params": {
                     "type": "object",
                     "description": "Action-specific parameters, including path values, query, and body."
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Maximum number of results to return (events only).",
-                    "minimum": 1
                 }
             },
             "required": ["action"]

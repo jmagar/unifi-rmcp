@@ -174,7 +174,6 @@ Network:
   runifi wlans [--json]                  WiFi network configurations
   runifi health [--json]                 Site health summary
   runifi alarms [--json]                 Active alarms and alerts
-  runifi events [--limit N] [--json]     Recent events (optional limit)
   runifi sysinfo [--json]                Controller system information
   runifi me [--json]                     Authenticated user info
   runifi <action> [--param k=v] [--body-json JSON] [--json]

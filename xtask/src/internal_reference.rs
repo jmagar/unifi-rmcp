@@ -112,7 +112,7 @@ fn curated_tools() -> Vec<InternalTool> {
             path: path.to_string(),
             title: title.to_string(),
             mutating,
-            verified: true,
+            verified: is_live_verified(action),
         })
         .collect::<Vec<_>>();
 
@@ -210,6 +210,24 @@ fn curated_tools() -> Vec<InternalTool> {
         }
     }
     tools
+}
+
+fn is_live_verified(action: &str) -> bool {
+    matches!(
+        action,
+        "clients"
+            | "devices"
+            | "wlans"
+            | "health"
+            | "alarms"
+            | "sysinfo"
+            | "me"
+            | "internal_list_networks"
+            | "internal_list_alarms"
+            | "internal_get_network_health"
+            | "internal_list_port_forwards"
+            | "internal_trigger_rf_scan"
+    )
 }
 
 fn title_case(input: &str) -> String {

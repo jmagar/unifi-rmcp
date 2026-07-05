@@ -3,7 +3,7 @@
 # test-tools.sh — Integration smoke-test for rustifi (UniFi MCP server) tools
 #
 # Tests every non-destructive action:
-#   clients, devices, wlans, health, alarms, events, sysinfo, me, help
+#   clients, devices, wlans, health, alarms, sysinfo, me, help
 #
 # Also tests the schema resource: unifi://schema/mcp-tool
 #
@@ -13,7 +13,6 @@
 #   wlans    → data array with at least one WLAN (name, security fields)
 #   health   → data array with subsystems
 #   alarms   → data array
-#   events   → data array
 #   sysinfo  → data with version field
 #   me       → name field (object, not array)
 #   help     → help key
@@ -451,13 +450,6 @@ suite_alarms() {
   run_test "unifi alarms: returns data array" '{"action":"alarms"}' "data"
 }
 
-suite_events() {
-  printf '\n%b== events ==%b\n' "${C_BOLD}" "${C_RESET}" | tee -a "${LOG_FILE}"
-  run_test "unifi events: returns data array (no limit)"  '{"action":"events"}'            "data"
-  run_test "unifi events: returns data array (limit=5)"   '{"action":"events","limit":5}'  "data"
-  run_test "unifi events: returns data array (limit=20)"  '{"action":"events","limit":20}' "data"
-}
-
 suite_sysinfo() {
   printf '\n%b== sysinfo ==%b\n' "${C_BOLD}" "${C_RESET}" | tee -a "${LOG_FILE}"
   run_test "unifi sysinfo: returns data"                '{"action":"sysinfo"}' "data"
@@ -584,7 +576,6 @@ run_parallel() {
     suite_wlans
     suite_health
     suite_alarms
-    suite_events
     suite_sysinfo
     suite_me
     suite_schema_resource
@@ -637,7 +628,6 @@ run_sequential() {
   suite_wlans
   suite_health
   suite_alarms
-  suite_events
   suite_sysinfo
   suite_me
   suite_schema_resource

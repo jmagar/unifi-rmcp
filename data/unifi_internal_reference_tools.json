@@ -48,7 +48,7 @@
       "path": "/rest/event",
       "title": "Events",
       "mutating": false,
-      "verified": true
+      "verified": false
     },
     {
       "action": "sysinfo",
@@ -88,7 +88,7 @@
       "path": "/rest/event",
       "title": "List Events",
       "mutating": false,
-      "verified": true
+      "verified": false
     },
     {
       "action": "internal_get_network_health",
@@ -112,7 +112,7 @@
       "path": "/rest/dnsrecord",
       "title": "List DNS Records",
       "mutating": false,
-      "verified": true
+      "verified": false
     },
     {
       "action": "internal_get_switch_ports",
@@ -120,7 +120,7 @@
       "path": "/stat/switch-port",
       "title": "Get Switch Ports",
       "mutating": false,
-      "verified": true
+      "verified": false
     },
     {
       "action": "internal_trigger_rf_scan",

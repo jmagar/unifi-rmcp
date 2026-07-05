@@ -40,7 +40,7 @@ fn internal_registry_contains_reference_count() {
 #[test]
 fn existing_internal_actions_are_registered() {
     for action in [
-        "clients", "devices", "wlans", "health", "alarms", "events", "sysinfo", "me",
+        "clients", "devices", "wlans", "health", "alarms", "sysinfo", "me",
     ] {
         let cap = find_capability(action).unwrap_or_else(|| panic!("missing {action}"));
         assert_eq!(cap.source, ApiSourceFamily::Internal);
@@ -51,11 +51,8 @@ fn existing_internal_actions_are_registered() {
 fn internal_gap_examples_are_registered() {
     for action in [
         "internal_list_alarms",
-        "internal_list_events",
         "internal_get_network_health",
         "internal_list_port_forwards",
-        "internal_list_dns_records",
-        "internal_get_switch_ports",
         "internal_trigger_rf_scan",
     ] {
         let cap = find_capability(action).unwrap_or_else(|| panic!("missing {action}"));

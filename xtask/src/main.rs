@@ -1,5 +1,7 @@
+mod endpoint_probe;
 mod internal_reference;
 mod official_api;
+mod verify_endpoints;
 
 use anyhow::{Context, Result, bail};
 use std::process::Command;
@@ -9,15 +11,16 @@ fn main() -> Result<()> {
     match args.first().map(String::as_str) {
         Some("refresh-official-api") => official_api::refresh(),
         Some("refresh-internal-reference") => internal_reference::refresh(),
+        Some("verify-api-endpoints") => verify_endpoints::verify(),
         Some("dist") => dist(),
         Some("ci") => ci(),
         Some("symlink-docs") => symlink_docs(),
         Some("check-env") => check_env(),
         Some(cmd) => bail!(
-            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, refresh-internal-reference, dist, ci, symlink-docs, check-env"
+            "Unknown xtask command: {cmd}\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, dist, ci, symlink-docs, check-env"
         ),
         None => bail!(
-            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, refresh-internal-reference, dist, ci, symlink-docs, check-env"
+            "Usage: cargo run -p xtask -- <command>\n\nAvailable: refresh-official-api, refresh-internal-reference, verify-api-endpoints, dist, ci, symlink-docs, check-env"
         ),
     }
 }

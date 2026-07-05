@@ -15,7 +15,6 @@ pub enum CliCommand {
     Wlans,
     Health,
     Alarms,
-    Events { limit: Option<usize> },
     Sysinfo,
     Me,
     Doctor,
@@ -37,9 +36,6 @@ impl CliCommand {
             ["wlans"] => Self::Wlans,
             ["health"] => Self::Health,
             ["alarms"] => Self::Alarms,
-            ["events", ..] => Self::Events {
-                limit: flag_usize(&rest, "--limit")?,
-            },
             ["sysinfo"] => Self::Sysinfo,
             ["me"] => Self::Me,
             ["doctor"] => Self::Doctor,
@@ -101,18 +97,6 @@ fn merge_param(params: &mut Value, key: &str, value: Value) {
     }
 }
 
-fn flag_usize(args: &[&str], flag: &str) -> Result<Option<usize>> {
-    let Some(pos) = args.iter().position(|a| *a == flag) else {
-        return Ok(None);
-    };
-    let val = args
-        .get(pos + 1)
-        .ok_or_else(|| anyhow::anyhow!("{flag} requires a value"))?;
-    val.parse::<usize>()
-        .map(Some)
-        .map_err(|_| anyhow::anyhow!("{flag}: expected non-negative integer, got {val:?}"))
-}
-
 // ── dispatch ──────────────────────────────────────────────────────────────────
 
 pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<()> {
@@ -122,7 +106,6 @@ pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<
         CliCommand::Wlans => ("wlans".to_string(), service.wlans().await?),
         CliCommand::Health => ("health".to_string(), service.health().await?),
         CliCommand::Alarms => ("alarms".to_string(), service.alarms().await?),
-        CliCommand::Events { limit } => ("events".to_string(), service.events(limit).await?),
         CliCommand::Sysinfo => ("sysinfo".to_string(), service.sysinfo().await?),
         CliCommand::Me => ("me".to_string(), service.me().await?),
         CliCommand::Action { action, params } => {
@@ -157,7 +140,6 @@ fn print_human(cmd: &str, data: &Value) {
         "wlans" => fmt_wlans(data),
         "health" => fmt_health(data),
         "alarms" => fmt_alarms(data),
-        "events" => fmt_events(data),
         "sysinfo" => fmt_sysinfo(data),
         "me" => fmt_me(data),
         _ => println!("{}", serde_json::to_string_pretty(data).unwrap_or_default()),
@@ -318,26 +300,6 @@ fn fmt_alarms(data: &Value) {
         println!("[{}] {}", key, msg);
     }
     println!("\n{} alarm(s)", alarms.len());
-}
-
-fn fmt_events(data: &Value) {
-    let events = match data["data"].as_array() {
-        Some(e) => e,
-        None => {
-            println!("{}", serde_json::to_string_pretty(data).unwrap_or_default());
-            return;
-        }
-    };
-    if events.is_empty() {
-        println!("No recent events.");
-        return;
-    }
-    for e in events {
-        let key = str_val_or(&e["key"], "?");
-        let msg = str_val_or(&e["msg"], "--");
-        println!("[{}] {}", key, msg);
-    }
-    println!("\n{} event(s)", events.len());
 }
 
 fn fmt_sysinfo(data: &Value) {
