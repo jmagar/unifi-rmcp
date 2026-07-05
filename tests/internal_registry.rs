@@ -9,10 +9,10 @@ fn internal_registry_contains_reference_count() {
     let inventory: Value =
         serde_json::from_str(include_str!("../data/unifi_internal_reference_tools.json"))
             .expect("internal reference inventory should parse");
-    assert_eq!(inventory["count"].as_u64(), Some(180));
+    assert_eq!(inventory["count"].as_u64(), Some(12));
     assert_eq!(
         inventory["tools"].as_array().expect("tools array").len(),
-        180
+        12
     );
 
     let internal = all_capabilities()
@@ -35,6 +35,7 @@ fn internal_registry_contains_reference_count() {
         let action = tool["action"].as_str().expect("verified action");
         assert!(exposed.contains(action), "verified {action} is not exposed");
     }
+    assert_eq!(internal.len(), 12);
 }
 
 #[test]
@@ -61,23 +62,12 @@ fn internal_gap_examples_are_registered() {
 }
 
 #[test]
-fn unverified_internal_reference_rows_are_not_runtime_capabilities() {
-    for cap in all_capabilities()
-        .iter()
-        .filter(|cap| cap.source == ApiSourceFamily::Internal)
-    {
-        let path = cap.path.as_deref().unwrap_or_default();
-        assert!(
-            !path.contains("/inventory/"),
-            "{} exposes {path}",
-            cap.action
-        );
-        assert!(!path.contains("/details/"), "{} exposes {path}", cap.action);
-        assert!(
-            !path.contains("/mcp_helper/"),
-            "{} exposes {path}",
-            cap.action
-        );
+fn internal_reference_contains_only_verified_rows() {
+    let inventory: Value =
+        serde_json::from_str(include_str!("../data/unifi_internal_reference_tools.json"))
+            .expect("internal reference inventory should parse");
+    for tool in inventory["tools"].as_array().expect("tools array") {
+        assert_eq!(tool["verified"].as_bool(), Some(true));
     }
     assert!(find_capability("internal_get_networks").is_none());
 }

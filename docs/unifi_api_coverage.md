@@ -14,7 +14,7 @@
 ## Initial Coverage
 
 - Official Network operations targeted: 78.
-- Internal Network reference rows captured: 180; live-verified runtime capabilities: 12.
+- Internal Network reference rows captured: 12; live-verified runtime capabilities: 12.
 - Existing live-verified rustifi actions preserved: clients, devices, wlans, health, alarms, sysinfo, me.
 
 ## Implementation Status
@@ -40,7 +40,7 @@
 | `list_wifi` | hybrid | official WiFi or `wlans` | implemented |
 | `get_system_info` | hybrid | official info or `sysinfo` | implemented |
 
-The internal reference inventory is registry-backed, but only verified internal rows are exposed as runtime MCP/CLI actions. Existing and explicitly mapped internal actions use known controller endpoints; the broader 180-row reference remains a research catalog until each path is verified against live controller behavior.
+The internal reference inventory is registry-backed and intentionally contains only endpoints that returned a 2xx response against the live Cloud Gateway Max. Earlier placeholder research rows that returned `api.err.InvalidObject` or `api.err.NotFound` are not kept as supported endpoints.
 
 ## Endpoint Verification
 
