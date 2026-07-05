@@ -11,11 +11,13 @@
 - `internal`: Network controller APIs under `/proxy/network/api/s/{site}` and `/proxy/network/v2/api/site/{site}`.
 - `hybrid`: convenience actions that use internal actions by default and switch to official API when `siteId` or `prefer="official"` is supplied.
 
-## Initial Coverage
+## Coverage
 
 - Official Network operations targeted: 78.
-- Internal Network reference rows accounted: 12; live-verified runtime capabilities: 12.
-- Existing live-verified rustifi actions preserved: clients, devices, wlans, health, alarms, sysinfo, me.
+- Internal Network reference rows sourced: 180.
+- Internal controller endpoint rows exposed at runtime: 175.
+- Internal reference meta tools accounted but not exposed as controller endpoints: 5.
+- Existing live-verified rustifi actions preserved: clients, devices, wlans, health, alarms, events, sysinfo, me.
 
 ## Implementation Status
 
@@ -27,6 +29,7 @@
 | `wlans` | internal | `GET /rest/wlanconf` | preserved |
 | `health` | internal | `GET /stat/health` | preserved |
 | `alarms` | internal | `GET /rest/alarm` | preserved |
+| `events` | internal | `GET /rest/event` | preserved |
 | `sysinfo` | internal | `GET /stat/sysinfo` | preserved |
 | `me` | internal | `GET /proxy/network/api/self` | preserved |
 | `internal_list_alarms` | internal | `GET /rest/alarm` | generic internal dispatcher |
@@ -40,9 +43,11 @@
 | `list_wifi` | hybrid | official WiFi or `wlans` | implemented |
 | `get_system_info` | hybrid | official info or `sysinfo` | implemented |
 
-Official parity means every operation in `data/unifi_official_network_v10_3_58.json` is registered as an action, has a valid path template, has an auth scope, and is either contract-verified or safe-live verified. Contract verification is the CI-safe floor; live probing is an operator action.
+Official endpoint parity means every operation in `data/unifi_official_network_v10_3_58.json` is registered as an action, has a valid path template, has an auth scope, and is either contract-verified or safe-live verified. Contract verification is the CI-safe floor; live probing is an operator action.
 
-The internal runtime surface is model-backed by `data/unifi_internal_endpoint_models.json` and exposes only rows with `runtime=true`. Non-runtime rows remain in the model inventory for accounting instead of being deleted to make verification green.
+The internal runtime surface is model-backed by `data/unifi_internal_endpoint_models.json` and exposes only controller endpoint rows with `runtime=true`. The five upstream-style meta helpers remain accounted in the source inventory, but they are not controller endpoints and are not exposed as runtime actions.
+
+Internal endpoint parity proves action registration and route construction. Full upstream-style tool parity also requires action-specific argument mapping into request bodies and query strings. That request-construction layer is tracked in `docs/superpowers/plans/2026-07-05-wiremock-api-call-tests.md`.
 
 ## Endpoint Verification
 
@@ -73,5 +78,6 @@ Result interpretation:
 - `auth_failed`: API key was rejected or lacks permission.
 - `server_error`: request failed or controller returned 5xx.
 - `skipped`: endpoint was disabled by mode or request budget.
+- `budget_exhausted`: live mode ran out of request budget; this fails verification.
 
 `mutating_live` is reserved for disposable or controlled sites. It is never the default.

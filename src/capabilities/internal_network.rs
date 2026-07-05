@@ -46,6 +46,7 @@ pub fn capabilities() -> Vec<Capability> {
         legacy("wlans", "WLANs", "GET", "/rest/wlanconf"),
         legacy("health", "Health", "GET", "/stat/health"),
         legacy("alarms", "Alarms", "GET", "/stat/alarm"),
+        legacy("events", "Events", "GET", "/rest/event"),
         legacy("sysinfo", "System Info", "GET", "/stat/sysinfo"),
         legacy("me", "Current User", "GET", "/api/self"),
         hybrid("list_clients", "List Clients"),

@@ -36,6 +36,16 @@ fn legacy_commands_parse() {
 }
 
 #[test]
+fn events_command_parse_supports_limit() {
+    let (command, json) = parse(&["events", "--limit", "1", "--json"]).unwrap();
+    assert!(json);
+    let CliCommand::Events { limit } = command else {
+        panic!("expected events command");
+    };
+    assert_eq!(limit, Some(1));
+}
+
+#[test]
 fn official_action_params_and_body_parse() {
     let (command, json) = parse(&[
         "official_create_network",

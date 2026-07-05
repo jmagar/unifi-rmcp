@@ -19,6 +19,17 @@ pub async fn execute(cfg: &UnifiConfig, capability: &Capability, params: &Value)
         "wlans" => client.wlans().await,
         "health" => client.health().await,
         "alarms" => client.alarms().await,
+        "events" => {
+            let mut events = client.events().await?;
+            truncate_data_array(
+                &mut events,
+                params
+                    .get("limit")
+                    .and_then(Value::as_u64)
+                    .map(|value| value as usize),
+            );
+            Ok(events)
+        }
         "sysinfo" => client.sysinfo().await,
         "me" => client.me().await,
         _ => execute_generic(cfg, capability, params).await,
@@ -67,4 +78,13 @@ async fn execute_generic(
         params.get("body"),
     )
     .await
+}
+
+fn truncate_data_array(value: &mut Value, limit: Option<usize>) {
+    let Some(limit) = limit else {
+        return;
+    };
+    if let Some(items) = value.get_mut("data").and_then(Value::as_array_mut) {
+        items.truncate(limit);
+    }
 }

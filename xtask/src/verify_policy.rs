@@ -84,6 +84,16 @@ pub(crate) fn fail_on_bad_status(report: &Report, contract_mode: bool, output: &
             report.totals.skipped
         );
     }
+    let budget_exhausted = report
+        .results
+        .iter()
+        .filter(|result| result.status == "budget_exhausted")
+        .count();
+    if budget_exhausted > 0 {
+        bail!(
+            "live endpoint verification exhausted request budget for {budget_exhausted} endpoints; see {output}"
+        );
+    }
     Ok(())
 }
 

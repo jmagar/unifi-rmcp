@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, path::Path};
 
 use anyhow::{Context, Result, bail};
 use reqwest::blocking::Client;
-use rustifi::api::{official::OfficialNetworkApi, path};
+use rustifi::api::{internal::InternalNetworkApi, official::OfficialNetworkApi, path};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -189,9 +189,12 @@ pub fn internal_path(cfg: &Config, template: &str) -> String {
             "/proxy/network/api/self".to_string()
         };
     }
+    let api = InternalNetworkApi::new_for_test("", &cfg.site, cfg.legacy);
+    if let Some(suffix) = template.strip_prefix("/v2/") {
+        return api.v2_site_path(suffix.trim_start_matches("api/site/{site}/"));
+    }
     let suffix = template.trim_start_matches('/');
-    let prefix = if cfg.legacy { "" } else { "/proxy/network" };
-    format!("{prefix}/api/s/{site}/{suffix}", site = cfg.site)
+    api.v1_site_path(suffix)
 }
 
 pub fn discover_site_id(client: &Client, cfg: &Config) -> Result<Option<String>> {
@@ -264,7 +267,7 @@ pub fn totals(results: &[ProbeResult]) -> Totals {
             "rejected" => totals.rejected += 1,
             "auth_failed" => totals.auth_failed += 1,
             "server_error" => totals.server_error += 1,
-            "skipped" => totals.skipped += 1,
+            "skipped" | "budget_exhausted" => totals.skipped += 1,
             _ => totals.rejected += 1,
         }
     }
@@ -290,6 +293,28 @@ pub fn skipped(
         http_status: None,
         verdict: "disabled_by_mode".to_string(),
         detail: String::new(),
+    }
+}
+
+pub fn budget_exhausted(
+    family: &'static str,
+    name: &str,
+    method: &str,
+    template: &str,
+    mutating: bool,
+) -> ProbeResult {
+    ProbeResult {
+        family,
+        name: name.to_string(),
+        method: method.to_string(),
+        template: template.to_string(),
+        path: None,
+        mutating,
+        verified_reference: None,
+        status: "budget_exhausted".to_string(),
+        http_status: None,
+        verdict: "live_budget_exhausted".to_string(),
+        detail: "increase UNIFI_VERIFY_MAX_REQUESTS or use contract mode".to_string(),
     }
 }
 

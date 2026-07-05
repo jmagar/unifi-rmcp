@@ -1,168 +1,91 @@
 use anyhow::{Result, bail};
-use serde::Serialize;
+use serde_json::Value;
 
 const RAW_OUTPUT: &str = "data/upstream_mcp_network_tools_main.json";
 const MODEL_OUTPUT: &str = "data/unifi_internal_endpoint_models.json";
-const SOURCE: &str = "neutral-internal-network-reference";
-const LIVE_EVIDENCE: &str = "live Cloud Gateway Max probe returned 2xx";
-
-#[derive(Debug, Serialize)]
-struct InternalTool {
-    action: String,
-    method: String,
-    path: String,
-    title: String,
-    mutating: bool,
-    verified: bool,
-}
-
-#[derive(Debug, Serialize)]
-struct RawInventory {
-    source: &'static str,
-    count: usize,
-    tools: Vec<InternalTool>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct InternalEndpointModel {
-    action: String,
-    title: String,
-    method: String,
-    path: String,
-    mutating: bool,
-    runtime: bool,
-    verified: bool,
-    verification_mode: String,
-    auth_scope: String,
-    evidence: String,
-}
-
-#[derive(Debug, Serialize)]
-struct ModelInventory {
-    source: &'static str,
-    source_count: usize,
-    accounted_count: usize,
-    runtime_count: usize,
-    non_runtime_count: usize,
-    tools: Vec<InternalEndpointModel>,
-}
 
 pub fn refresh() -> Result<()> {
-    let raw_tools = curated_tools();
-    if raw_tools.len() != 12 {
-        bail!(
-            "expected 12 internal reference tools, got {}",
-            raw_tools.len()
-        );
-    }
-    std::fs::create_dir_all("data")?;
-    let raw = RawInventory {
-        source: SOURCE,
-        count: raw_tools.len(),
-        tools: raw_tools,
-    };
-    write_json(RAW_OUTPUT, &raw)?;
-
-    let tools = raw
-        .tools
-        .iter()
-        .map(endpoint_model)
-        .collect::<Vec<InternalEndpointModel>>();
-    let runtime_count = tools.iter().filter(|tool| tool.runtime).count();
-    let models = ModelInventory {
-        source: SOURCE,
-        source_count: raw.tools.len(),
-        accounted_count: tools.len(),
-        runtime_count,
-        non_runtime_count: tools.len() - runtime_count,
-        tools,
-    };
-    write_json(MODEL_OUTPUT, &models)?;
+    let raw_body = std::fs::read_to_string(RAW_OUTPUT)?;
+    let model_body = std::fs::read_to_string(MODEL_OUTPUT)?;
+    let raw = read_json(&raw_body)?;
+    let model = read_json(&model_body)?;
+    validate_inventories(&raw, &model)?;
+    write_original(RAW_OUTPUT, &raw_body)?;
+    write_original(MODEL_OUTPUT, &model_body)?;
     Ok(())
 }
 
-fn write_json<T: Serialize>(path: &str, value: &T) -> Result<()> {
-    let body = serde_json::to_string_pretty(value)?;
+fn read_json(body: &str) -> Result<Value> {
+    Ok(serde_json::from_str(body)?)
+}
+
+fn write_original(path: &str, body: &str) -> Result<()> {
+    let body = body.trim_end_matches('\n');
     std::fs::write(path, format!("{body}\n"))?;
     Ok(())
 }
 
-fn endpoint_model(tool: &InternalTool) -> InternalEndpointModel {
-    InternalEndpointModel {
-        action: tool.action.clone(),
-        title: tool.title.clone(),
-        method: tool.method.clone(),
-        path: tool.path.clone(),
-        mutating: tool.mutating,
-        runtime: tool.verified,
-        verified: tool.verified,
-        verification_mode: if tool.verified {
-            "live_2xx".to_string()
-        } else {
-            "requires_fixture".to_string()
-        },
-        auth_scope: if tool.mutating { "admin" } else { "read" }.to_string(),
-        evidence: if tool.verified {
-            LIVE_EVIDENCE.to_string()
-        } else {
-            "reference row retained for contract accounting".to_string()
-        },
-    }
+fn validate_inventories(raw: &Value, model: &Value) -> Result<()> {
+    let raw_tools = array_len(raw, "tools")?;
+    let model_tools = array_len(model, "tools")?;
+    let controller_endpoint_count = number(raw, "controller_endpoint_count")?;
+    let meta_tool_count = number(raw, "meta_tool_count")?;
+    let runtime_count = number(model, "runtime_count")?;
+    let non_runtime_count = number(model, "non_runtime_count")?;
+
+    ensure_eq(number(raw, "count")?, raw_tools, "raw count")?;
+    ensure_eq(
+        controller_endpoint_count + meta_tool_count,
+        raw_tools,
+        "raw endpoint accounting",
+    )?;
+    ensure_eq(
+        number(model, "source_count")?,
+        raw_tools,
+        "model source count",
+    )?;
+    ensure_eq(
+        number(model, "accounted_count")?,
+        model_tools,
+        "model accounted count",
+    )?;
+    ensure_eq(
+        runtime_count + non_runtime_count,
+        model_tools,
+        "model runtime accounting",
+    )?;
+    ensure_eq(
+        model_tools,
+        controller_endpoint_count,
+        "controller endpoint model count",
+    )?;
+    ensure_eq(
+        number(model, "meta_tool_count")?,
+        meta_tool_count,
+        "model meta tool count",
+    )?;
+    Ok(())
 }
 
-fn curated_tools() -> Vec<InternalTool> {
-    [
-        ("clients", "GET", "/stat/sta", "Clients", false),
-        ("devices", "GET", "/stat/device", "Devices", false),
-        ("wlans", "GET", "/rest/wlanconf", "WLANs", false),
-        ("health", "GET", "/stat/health", "Health", false),
-        ("alarms", "GET", "/rest/alarm", "Alarms", false),
-        ("sysinfo", "GET", "/stat/sysinfo", "System Info", false),
-        ("me", "GET", "/api/self", "Authenticated User", false),
-        (
-            "internal_list_networks",
-            "GET",
-            "/rest/networkconf",
-            "List Networks",
-            false,
-        ),
-        (
-            "internal_list_alarms",
-            "GET",
-            "/rest/alarm",
-            "List Alarms",
-            false,
-        ),
-        (
-            "internal_get_network_health",
-            "GET",
-            "/stat/health",
-            "Get Network Health",
-            false,
-        ),
-        (
-            "internal_list_port_forwards",
-            "GET",
-            "/rest/portforward",
-            "List Port Forwards",
-            false,
-        ),
-        (
-            "internal_trigger_rf_scan",
-            "POST",
-            "/cmd/devmgr",
-            "Trigger RF Scan",
-            true,
-        ),
-    ]
-    .into_iter()
-    .map(|(action, method, path, title, mutating)| InternalTool {
-        action: action.to_string(),
-        method: method.to_string(),
-        path: path.to_string(),
-        title: title.to_string(),
-        mutating,
-        verified: true,
-    })
-    .collect::<Vec<_>>()
+fn array_len(value: &Value, key: &str) -> Result<usize> {
+    value
+        .get(key)
+        .and_then(Value::as_array)
+        .map(Vec::len)
+        .ok_or_else(|| anyhow::anyhow!("{key} must be an array"))
+}
+
+fn number(value: &Value, key: &str) -> Result<usize> {
+    value
+        .get(key)
+        .and_then(Value::as_u64)
+        .map(|value| value as usize)
+        .ok_or_else(|| anyhow::anyhow!("{key} must be a number"))
+}
+
+fn ensure_eq(actual: usize, expected: usize, label: &str) -> Result<()> {
+    if actual != expected {
+        bail!("{label} mismatch: expected {expected}, got {actual}");
+    }
+    Ok(())
 }

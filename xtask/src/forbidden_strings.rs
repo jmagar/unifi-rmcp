@@ -17,7 +17,9 @@ pub fn check() -> Result<()> {
         {
             failures.push(format!("live verifier report is tracked: {file}"));
         }
-        let body = read_tracked_text(&file)?;
+        let Some(body) = read_tracked_text(&file)? else {
+            continue;
+        };
         if file.ends_with(".rs") {
             let line_count = body.lines().count();
             if line_count > MAX_RUST_LINES {
@@ -41,9 +43,12 @@ pub fn check() -> Result<()> {
     }
 }
 
-fn read_tracked_text(file: &str) -> Result<String> {
-    let bytes = std::fs::read(file).with_context(|| format!("read tracked file {file}"))?;
-    Ok(String::from_utf8_lossy(&bytes).to_string())
+fn read_tracked_text(file: &str) -> Result<Option<String>> {
+    match std::fs::read(file) {
+        Ok(bytes) => Ok(Some(String::from_utf8_lossy(&bytes).to_string())),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error).with_context(|| format!("read tracked file {file}")),
+    }
 }
 
 fn tracked_files() -> Result<Vec<String>> {

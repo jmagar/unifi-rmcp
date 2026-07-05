@@ -15,6 +15,7 @@ pub enum CliCommand {
     Wlans,
     Health,
     Alarms,
+    Events { limit: Option<usize> },
     Sysinfo,
     Me,
     Doctor,
@@ -36,6 +37,9 @@ impl CliCommand {
             ["wlans"] => Self::Wlans,
             ["health"] => Self::Health,
             ["alarms"] => Self::Alarms,
+            ["events", rest @ ..] => Self::Events {
+                limit: parse_limit(rest)?,
+            },
             ["sysinfo"] => Self::Sysinfo,
             ["me"] => Self::Me,
             ["doctor"] => Self::Doctor,
@@ -91,6 +95,14 @@ fn parse_params(args: &[&str]) -> Result<Value> {
     Ok(params)
 }
 
+fn parse_limit(args: &[&str]) -> Result<Option<usize>> {
+    match args {
+        [] => Ok(None),
+        ["--limit", value] => Ok(Some(value.parse::<usize>()?)),
+        [other, ..] => bail!("unknown argument for events: {other}"),
+    }
+}
+
 fn merge_param(params: &mut Value, key: &str, value: Value) {
     if let Some(object) = params.as_object_mut() {
         object.insert(key.to_string(), value);
@@ -106,6 +118,7 @@ pub async fn run(service: &UnifiService, cmd: CliCommand, json: bool) -> Result<
         CliCommand::Wlans => ("wlans".to_string(), service.wlans().await?),
         CliCommand::Health => ("health".to_string(), service.health().await?),
         CliCommand::Alarms => ("alarms".to_string(), service.alarms().await?),
+        CliCommand::Events { limit } => ("events".to_string(), service.events(limit).await?),
         CliCommand::Sysinfo => ("sysinfo".to_string(), service.sysinfo().await?),
         CliCommand::Me => ("me".to_string(), service.me().await?),
         CliCommand::Action { action, params } => {
@@ -140,6 +153,7 @@ fn print_human(cmd: &str, data: &Value) {
         "wlans" => fmt_wlans(data),
         "health" => fmt_health(data),
         "alarms" => fmt_alarms(data),
+        "events" => println!("{}", serde_json::to_string_pretty(data).unwrap_or_default()),
         "sysinfo" => fmt_sysinfo(data),
         "me" => fmt_me(data),
         _ => println!("{}", serde_json::to_string_pretty(data).unwrap_or_default()),

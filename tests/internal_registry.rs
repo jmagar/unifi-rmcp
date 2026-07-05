@@ -27,7 +27,7 @@ fn internal_registry_contains_reference_count() {
         .iter()
         .filter(|tool| tool["runtime"].as_bool() == Some(true))
         .collect::<Vec<_>>();
-    assert_eq!(internal.len(), verified.len() + 7);
+    assert_eq!(internal.len(), verified.len() + 8);
 
     let exposed = internal
         .iter()
@@ -37,13 +37,13 @@ fn internal_registry_contains_reference_count() {
         let action = tool["action"].as_str().expect("verified action");
         assert!(exposed.contains(action), "verified {action} is not exposed");
     }
-    assert_eq!(internal.len(), 182);
+    assert_eq!(internal.len(), 183);
 }
 
 #[test]
 fn existing_internal_actions_are_registered() {
     for action in [
-        "clients", "devices", "wlans", "health", "alarms", "sysinfo", "me",
+        "clients", "devices", "wlans", "health", "alarms", "events", "sysinfo", "me",
     ] {
         let cap = find_capability(action).unwrap_or_else(|| panic!("missing {action}"));
         assert_eq!(cap.source, ApiSourceFamily::Internal);

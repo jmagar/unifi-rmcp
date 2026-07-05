@@ -5,8 +5,8 @@ use reqwest::blocking::Client;
 
 use crate::endpoint_probe::{
     Config, InternalInventory, InternalTool, OfficialInventory, ProbeResult, Report,
-    classify_status, detail, discover_site_id, inert_body, internal_path, load_dotenv,
-    official_path, skipped, timestamp, totals,
+    budget_exhausted, classify_status, detail, discover_site_id, inert_body, internal_path,
+    load_dotenv, official_path, skipped, timestamp, totals,
 };
 use crate::verify_policy::{
     LiveBudget, fail_on_bad_status, internal_contract_valid, official_contract_status_for,
@@ -182,13 +182,14 @@ fn probe_official(
             continue;
         }
         if (mode == VerifyMode::SafeLive && mutating) || op.path.contains("*path") {
+            let status = official_contract_status_for(&op, mutating);
             results.push(policy_result(
                 "official",
                 op.operation_id,
                 op.method,
                 op.path,
                 mutating,
-                "contract_ok",
+                status,
                 None,
             ));
             continue;
@@ -237,7 +238,7 @@ fn probe_official(
             continue;
         };
         if !take_live_budget(live_budget.as_deref_mut()) {
-            results.push(skipped(
+            results.push(budget_exhausted(
                 "official",
                 &op.operation_id,
                 &op.method,
@@ -340,7 +341,7 @@ fn probe_internal(
             continue;
         };
         if !take_live_budget(live_budget.as_deref_mut()) {
-            results.push(skipped(
+            results.push(budget_exhausted(
                 "internal",
                 &tool.action,
                 &tool.method,
