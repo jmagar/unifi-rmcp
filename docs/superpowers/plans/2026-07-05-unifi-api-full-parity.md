@@ -27,7 +27,7 @@
 
 - Create `data/upstream_mcp_network_tools_main.json`: neutral raw evidence capture of the upstream MCP reference surface.
 - Create `data/unifi_internal_endpoint_models.json`: canonical internal/reference endpoint model file; this is the runtime source of truth.
-- Remove runtime dependence on `data/unifi_internal_reference_tools.json`; keep it only if a compatibility test proves it is still required.
+- Remove runtime dependence on the legacy internal-reference JSON; keep `data/upstream_mcp_network_tools_main.json` as neutral raw evidence and use `data/unifi_internal_endpoint_models.json` as the canonical runtime model.
 - Create `src/api/path.rs`: pure path substitution, segment encoding, and connector proxy canonicalization.
 - Modify `src/actions/official.rs`: use `src/api/path.rs`; preserve all 78 `official_*` actions.
 - Modify `src/actions/internal.rs`: use canonical endpoint models; remove stale bespoke branches that are not model-backed.

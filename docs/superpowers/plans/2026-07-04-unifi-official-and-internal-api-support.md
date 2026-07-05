@@ -7,7 +7,7 @@ Add registry-backed dispatch coverage for the captured official UniFi Network AP
 ## Scope
 
 - Official Network API: all 78 captured operations from `data/unifi_official_network_v10_3_58.json`.
-- Internal controller API: 180 reference rows captured in `data/unifi_internal_reference_tools.json`; only verified rows are exposed as runtime capabilities.
+- Internal controller API: neutral reference rows captured in `data/upstream_mcp_network_tools_main.json`; only verified rows in `data/unifi_internal_endpoint_models.json` are exposed as runtime capabilities.
 - Hybrid aliases: `list_clients`, `list_devices`, `list_networks`, `list_wifi`, and `get_system_info`.
 
 ## Runtime Contract

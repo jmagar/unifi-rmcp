@@ -82,7 +82,6 @@ pub struct Config {
     pub site_id: Option<String>,
     pub skip_tls_verify: bool,
     pub legacy: bool,
-    pub include_mutating: bool,
     pub verify_unverified_internal: bool,
     pub max_requests: usize,
     pub timeout_secs: u64,
@@ -102,7 +101,6 @@ impl Config {
             env_bool("UNIFI_ALLOW_INSECURE_TLS", true),
         );
         let legacy = env_bool("UNIFI_LEGACY", false);
-        let include_mutating = env_bool("UNIFI_VERIFY_MUTATING", false);
         let verify_unverified_internal = env_bool("UNIFI_VERIFY_UNVERIFIED_INTERNAL", false);
         let max_requests = env_usize("UNIFI_VERIFY_MAX_REQUESTS", 200);
         let timeout_secs = env_u64("UNIFI_VERIFY_TIMEOUT_SECS", 12);
@@ -115,7 +113,6 @@ impl Config {
             site_id,
             skip_tls_verify,
             legacy,
-            include_mutating,
             verify_unverified_internal,
             max_requests,
             timeout_secs,
@@ -262,7 +259,8 @@ pub fn totals(results: &[ProbeResult]) -> Totals {
     };
     for result in results {
         match result.status.as_str() {
-            "live_ok" | "contract_ok" | "requires_fixture" => totals.ok += 1,
+            "live_ok" | "contract_ok" => totals.ok += 1,
+            "requires_fixture" | "unsupported" => {}
             "rejected" => totals.rejected += 1,
             "auth_failed" => totals.auth_failed += 1,
             "server_error" => totals.server_error += 1,

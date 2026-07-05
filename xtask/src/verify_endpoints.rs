@@ -8,6 +8,10 @@ use crate::endpoint_probe::{
     discover_site_id, inert_body, internal_path, load_dotenv, official_path, skipped, timestamp,
     totals,
 };
+use crate::verify_policy::{
+    LiveBudget, fail_on_bad_status, internal_contract_valid, official_contract_status_for,
+    requires_fixture, take_live_budget,
+};
 
 const OFFICIAL_INPUT: &str = "data/unifi_official_network_v10_3_58.json";
 const INTERNAL_INPUT: &str = "data/unifi_internal_endpoint_models.json";
@@ -65,6 +69,7 @@ impl VerifyMode {
 pub fn verify() -> Result<()> {
     let mode = VerifyMode::parse()?;
     let mut cfg_and_client = None;
+    let mut live_budget = None;
     if mode.is_live() {
         load_dotenv(".env")?;
         load_dotenv("/home/jmagar/.unifi/.env")?;
@@ -72,24 +77,25 @@ pub fn verify() -> Result<()> {
         load_dotenv("/home/jmagar/.labby/.env")?;
 
         let mut cfg = Config::from_env()?;
-        cfg.include_mutating = mode == VerifyMode::MutatingLive;
         let client = Client::builder()
             .danger_accept_invalid_certs(cfg.skip_tls_verify)
             .http1_only()
             .timeout(Duration::from_secs(cfg.timeout_secs))
             .build()
             .context("build HTTP client")?;
-        if cfg.site_id.is_none() {
+        let mut budget = LiveBudget::new(cfg.max_requests);
+        if cfg.site_id.is_none() && budget.try_take() {
             cfg.site_id = discover_site_id(&client, &cfg)?;
         }
+        live_budget = Some(budget);
         cfg_and_client = Some((cfg, client));
     }
     let cfg = cfg_and_client.as_ref().map(|(cfg, _)| cfg);
     let client = cfg_and_client.as_ref().map(|(_, client)| client);
 
     let mut results = Vec::new();
-    results.extend(probe_official(client, cfg, mode)?);
-    results.extend(probe_internal(client, cfg, mode)?);
+    results.extend(probe_official(client, cfg, live_budget.as_mut(), mode)?);
+    results.extend(probe_internal(client, cfg, live_budget.as_mut(), mode)?);
 
     let totals = totals(&results);
     let report = Report {
@@ -133,6 +139,11 @@ pub fn verify() -> Result<()> {
     println!("official accounted {}", official_count(&report.results));
     println!("official rejected {}", official_rejected(&report.results));
     println!("report: {}", output.display());
+    fail_on_bad_status(
+        &report,
+        mode == VerifyMode::Contract,
+        &output.display().to_string(),
+    )?;
     Ok(())
 }
 
@@ -149,16 +160,16 @@ fn report_path(mode: VerifyMode) -> PathBuf {
 fn probe_official(
     client: Option<&Client>,
     cfg: Option<&Config>,
+    mut live_budget: Option<&mut LiveBudget>,
     mode: VerifyMode,
 ) -> Result<Vec<ProbeResult>> {
     let inventory: OfficialInventory =
         serde_json::from_str(&std::fs::read_to_string(OFFICIAL_INPUT)?)?;
     let mut results = Vec::new();
-    let mut live_requests = 0;
     for op in inventory.operations {
         let mutating = !op.method.eq_ignore_ascii_case("GET");
-        if mode == VerifyMode::Contract || mutating || op.path.contains("*path") {
-            let status = official_contract_status(mutating, &op.path);
+        if mode == VerifyMode::Contract {
+            let status = official_contract_status_for(&op, mutating);
             results.push(policy_result(
                 "official",
                 op.operation_id,
@@ -166,6 +177,18 @@ fn probe_official(
                 op.path,
                 mutating,
                 status,
+                None,
+            ));
+            continue;
+        }
+        if (mode == VerifyMode::SafeLive && mutating) || op.path.contains("*path") {
+            results.push(policy_result(
+                "official",
+                op.operation_id,
+                op.method,
+                op.path,
+                mutating,
+                "contract_ok",
                 None,
             ));
             continue;
@@ -213,7 +236,7 @@ fn probe_official(
         let Some(client) = client else {
             continue;
         };
-        if live_requests >= cfg.max_requests {
+        if !take_live_budget(live_budget.as_deref_mut()) {
             results.push(skipped(
                 "official",
                 &op.operation_id,
@@ -235,7 +258,6 @@ fn probe_official(
             mutating,
             None,
         ));
-        live_requests += 1;
         rate_limit(cfg);
     }
     Ok(results)
@@ -244,16 +266,21 @@ fn probe_official(
 fn probe_internal(
     client: Option<&Client>,
     cfg: Option<&Config>,
+    mut live_budget: Option<&mut LiveBudget>,
     mode: VerifyMode,
 ) -> Result<Vec<ProbeResult>> {
     let inventory: InternalInventory =
         serde_json::from_str(&std::fs::read_to_string(INTERNAL_INPUT)?)?;
     let mut results = Vec::new();
-    let mut live_requests = 0;
     for tool in inventory.tools {
         let auth_scope = tool.auth_scope.as_deref().unwrap_or("read");
         if mode == VerifyMode::Contract || !tool.runtime {
-            let status = if tool.runtime {
+            let invalid_admin_scope = tool.mutating && auth_scope != "admin";
+            let status = if invalid_admin_scope {
+                "unsupported"
+            } else if mode == VerifyMode::Contract && !internal_contract_valid(&tool) {
+                "contract_error"
+            } else if tool.runtime {
                 "contract_ok"
             } else {
                 tool.verification_mode.as_deref().unwrap_or("unsupported")
@@ -267,9 +294,6 @@ fn probe_internal(
                 status,
                 Some(tool.verified),
             ));
-            if tool.mutating && auth_scope != "admin" {
-                results.last_mut().expect("policy result").status = "unsupported".to_string();
-            }
             continue;
         }
         let Some(cfg) = cfg else {
@@ -291,7 +315,7 @@ fn probe_internal(
         let Some(client) = client else {
             continue;
         };
-        if live_requests >= cfg.max_requests {
+        if !take_live_budget(live_budget.as_deref_mut()) {
             results.push(skipped(
                 "internal",
                 &tool.action,
@@ -313,7 +337,6 @@ fn probe_internal(
             tool.mutating,
             Some(tool.verified),
         ));
-        live_requests += 1;
         rate_limit(cfg);
     }
     Ok(results)
@@ -400,22 +423,6 @@ fn policy_result(
         verdict: status.to_string(),
         detail: String::new(),
     }
-}
-
-fn official_contract_status(mutating: bool, path: &str) -> &'static str {
-    if path.contains("*path") || mutating {
-        "contract_ok"
-    } else if requires_fixture(path) {
-        "requires_fixture"
-    } else {
-        "contract_ok"
-    }
-}
-
-fn requires_fixture(path: &str) -> bool {
-    let needs_path_fixture = path.contains('{') && path.replace("{siteId}", "").contains('{');
-    let needs_query_fixture = matches!(path, "/v1/sites/{siteId}/firewall/policies/ordering");
-    needs_path_fixture || needs_query_fixture
 }
 
 fn rate_limit(cfg: &Config) {

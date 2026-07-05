@@ -65,7 +65,8 @@ fn hybrid(action: &str, title: &str) -> Capability {
 
 fn auth_scope(scope: &str) -> AuthScope {
     match scope {
+        "read" => AuthScope::Read,
         "admin" => AuthScope::Admin,
-        _ => AuthScope::Read,
+        other => panic!("unknown internal auth_scope {other}"),
     }
 }

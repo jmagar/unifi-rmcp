@@ -57,7 +57,7 @@ The branch added registry-backed official API dispatch, verified internal capabi
 | modified | `src/cli.rs` | CLI parser | Real parser is library-visible and rejects malformed generated-action args |
 | modified | `tests/*` | Regression coverage | HTTP capture, registry drift, hybrid aliases, parser negatives, auth scope mapping |
 | modified | `docs/*`, `README.md`, plugin skill | User-facing docs | Port, binary name, response shape, and mutation contract corrected |
-| modified | `data/unifi_internal_reference_tools.json` | Internal reference inventory | Adds verified flags |
+| modified | `data/upstream_mcp_network_tools_main.json`, `data/unifi_internal_endpoint_models.json` | Internal reference inventory | Adds neutral source capture and canonical endpoint models |
 | modified | `xtask/src/internal_reference.rs` | Inventory generation | Marks curated verified rows vs unverified reference rows |
 
 ## Beads Activity
@@ -136,7 +136,8 @@ The branch added registry-backed official API dispatch, verified internal capabi
 - PR: https://github.com/jmagar/unifi-rmcp/pull/2
 - Bead: `rustifi-4wo`
 - Official inventory: `data/unifi_official_network_v10_3_58.json`
-- Internal reference inventory: `data/unifi_internal_reference_tools.json`
+- Internal reference inventory: `data/upstream_mcp_network_tools_main.json`
+- Canonical internal endpoint models: `data/unifi_internal_endpoint_models.json`
 
 ## Open Questions
 

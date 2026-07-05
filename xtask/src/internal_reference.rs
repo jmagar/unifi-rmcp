@@ -1,7 +1,6 @@
 use anyhow::{Result, bail};
 use serde::Serialize;
 
-const LEGACY_OUTPUT: &str = "data/unifi_internal_reference_tools.json";
 const RAW_OUTPUT: &str = "data/upstream_mcp_network_tools_main.json";
 const MODEL_OUTPUT: &str = "data/unifi_internal_endpoint_models.json";
 const SOURCE: &str = "neutral-internal-network-reference";
@@ -63,7 +62,6 @@ pub fn refresh() -> Result<()> {
         tools: raw_tools,
     };
     write_json(RAW_OUTPUT, &raw)?;
-    write_json(LEGACY_OUTPUT, &raw)?;
 
     let tools = raw
         .tools

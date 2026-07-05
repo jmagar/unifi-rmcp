@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use std::process::Command;
 
 const MAX_RUST_LINES: usize = 500;
@@ -17,24 +17,18 @@ pub fn check() -> Result<()> {
         {
             failures.push(format!("live verifier report is tracked: {file}"));
         }
+        let body = read_tracked_text(&file)?;
         if file.ends_with(".rs") {
-            let body = std::fs::read_to_string(&file)?;
             let line_count = body.lines().count();
             if line_count > MAX_RUST_LINES {
                 failures.push(format!(
                     "{file} has {line_count} lines, over the {MAX_RUST_LINES} line limit"
                 ));
             }
-            for literal in &forbidden {
-                if body.contains(literal) {
-                    failures.push(format!("{file} contains forbidden literal {literal}"));
-                }
-            }
-        } else if let Ok(body) = std::fs::read_to_string(&file) {
-            for literal in &forbidden {
-                if body.contains(literal) {
-                    failures.push(format!("{file} contains forbidden literal {literal}"));
-                }
+        }
+        for literal in &forbidden {
+            if body.contains(literal) {
+                failures.push(format!("{file} contains forbidden literal {literal}"));
             }
         }
     }
@@ -45,6 +39,11 @@ pub fn check() -> Result<()> {
     } else {
         bail!("{}", failures.join("\n"));
     }
+}
+
+fn read_tracked_text(file: &str) -> Result<String> {
+    let bytes = std::fs::read(file).with_context(|| format!("read tracked file {file}"))?;
+    Ok(String::from_utf8_lossy(&bytes).to_string())
 }
 
 fn tracked_files() -> Result<Vec<String>> {

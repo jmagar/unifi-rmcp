@@ -3,6 +3,7 @@ mod forbidden_strings;
 mod internal_reference;
 mod official_api;
 mod verify_endpoints;
+mod verify_policy;
 
 use anyhow::{Context, Result, bail};
 use std::process::Command;

@@ -1,13 +1,18 @@
 #[test]
 fn verifier_contract_mode_is_the_ci_default() {
-    let help = xtask()
-        .args(["verify-api-endpoints", "--help"])
+    let output = xtask()
+        .args(["verify-api-endpoints", "--mode", "contract"])
         .output()
-        .expect("xtask help should run");
-    let stdout = String::from_utf8_lossy(&help.stdout);
-    assert!(stdout.contains("contract"));
-    assert!(stdout.contains("safe_live"));
-    assert!(stdout.contains("mutating_live"));
+        .expect("xtask contract verification should run");
+    assert!(
+        output.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("official accounted 78"));
+    assert!(stdout.contains("official rejected 0"));
 }
 
 #[test]
