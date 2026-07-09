@@ -1,0 +1,39 @@
+{
+  "name": "unifi-rmcp",
+  "version": "0.2.0",
+  "description": "Node launcher for the UniFi RMCP server and runifi CLI binary.",
+  "license": "MIT",
+  "homepage": "https://github.com/jmagar/unifi-rmcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmagar/unifi-rmcp.git",
+    "directory": "packages/unifi-rmcp"
+  },
+  "bugs": {
+    "url": "https://github.com/jmagar/unifi-rmcp/issues"
+  },
+  "bin": {
+    "unifi-rmcp": "bin/runifi.js",
+    "runifi": "bin/runifi.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "scripts/",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "test": "node --test",
+    "check": "node --check bin/runifi.js && node --check scripts/install.js && node --check lib/platform.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "unifi",
+    "ubiquiti",
+    "network"
+  ]
+}

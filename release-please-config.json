@@ -53,8 +53,8 @@
   ],
   "packages": {
     ".": {
-      "package-name": "rustifi",
-      "component": "rustifi",
+      "package-name": "unifi-rmcp",
+      "component": "unifi-rmcp",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
@@ -70,7 +70,8 @@
         {
           "type": "generic",
           "path": "server.json"
-        }
+        },
+        "packages/unifi-rmcp/package.json"
       ]
     }
   }

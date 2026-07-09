@@ -1,8 +1,40 @@
-# rustifi
+# unifi-rmcp
 
 UniFi network MCP server — official and internal REST API bridge for Ubiquiti UniFi controllers (UniFi OS / UDM and legacy).
 
 Exposes the documented UniFi Network Integration API, preserved internal controller actions, and hybrid convenience actions to MCP clients (Claude, Cursor, etc.) and as a CLI tool.
+
+
+## npm / npx
+
+Run the stdio MCP server or CLI without a manual binary install:
+
+```bash
+npx -y unifi-rmcp --help
+```
+
+MCP clients can use the same launcher:
+
+```json
+{
+  "mcpServers": {
+    "unifi": {
+      "command": "npx",
+      "args": ["-y", "unifi-rmcp"]
+    }
+  }
+}
+```
+
+The npm package downloads the `runifi` binary from GitHub Releases during `postinstall` and keeps the release tag aligned with `packages/unifi-rmcp/package.json`.
+
+Naming convention for this rmcp family:
+
+| Surface | Pattern | This repo |
+|---|---|---|
+| Repository | `<service>-rmcp` | `unifi-rmcp` |
+| npm package | `<service>-rmcp` | `unifi-rmcp` |
+| CLI / binary | `r<service>` | `runifi` |
 
 ## UniFi API Overview
 

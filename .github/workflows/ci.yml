@@ -83,3 +83,18 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  npm:
+    name: npm launcher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test npm launcher
+        run: npm test --prefix packages/unifi-rmcp
+      - name: Check npm launcher syntax
+        run: npm run check --prefix packages/unifi-rmcp
+      - name: Dry-run npm package
+        run: npm pack --dry-run --json ./packages/unifi-rmcp
