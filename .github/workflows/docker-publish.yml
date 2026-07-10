@@ -18,6 +18,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      MCP_PRIVATE_KEY: ${{ secrets.MCP_PRIVATE_KEY }}
     permissions:
       contents: read
       packages: write
@@ -83,14 +85,18 @@ jobs:
         continue-on-error: true
 
       - name: Install mcp-publisher
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && env.MCP_PRIVATE_KEY != ''
         run: |
           curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
 
       - name: Authenticate to MCP Registry
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: ./mcp-publisher login dns --domain tootie.tv --private-key ${{ secrets.MCP_PRIVATE_KEY }}
+        if: startsWith(github.ref, 'refs/tags/v') && env.MCP_PRIVATE_KEY != ''
+        run: ./mcp-publisher login dns --domain tootie.tv --private-key "$MCP_PRIVATE_KEY"
 
       - name: Publish to MCP Registry
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && env.MCP_PRIVATE_KEY != ''
         run: ./mcp-publisher publish
+
+      - name: Skip MCP Registry publish
+        if: startsWith(github.ref, 'refs/tags/v') && env.MCP_PRIVATE_KEY == ''
+        run: echo "::notice::MCP_PRIVATE_KEY is not configured; skipping MCP Registry publish"
