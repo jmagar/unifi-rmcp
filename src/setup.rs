@@ -177,7 +177,7 @@ fn install_self() -> Result<PathBuf> {
 /// `${user_config.*}` block, not the hook's process env.
 fn apply_plugin_options() {
     // CLAUDE_PLUGIN_DATA is intentionally NOT mapped to UNIFI_MCP_HOME: appdata
-    // resolves to the canonical ~/.unifi/ (the same place the binary loads .env
+    // resolves to the canonical ~/.unifi-rmcp/ (the same place the binary loads .env
     // from via config::load_dotenv), not the plugin's sandboxed data dir. An
     // explicit UNIFI_MCP_HOME override is still honored by appdata_dir().
 

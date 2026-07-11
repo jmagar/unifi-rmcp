@@ -72,7 +72,7 @@ pub fn verify() -> Result<()> {
     let mut live_budget = None;
     if mode.is_live() {
         load_dotenv(".env")?;
-        load_dotenv("/home/jmagar/.unifi/.env")?;
+        load_dotenv("/home/jmagar/.unifi-rmcp/.env")?;
         load_dotenv("/home/jmagar/.rustifi/.env")?;
         load_dotenv("/home/jmagar/.labby/.env")?;
 

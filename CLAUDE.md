@@ -76,10 +76,14 @@ UNIFI_API_KEY              X-API-KEY header value (required)
 UNIFI_SITE                 Site name (default: default)
 UNIFI_SKIP_TLS_VERIFY      Skip TLS cert check (default: true)
 UNIFI_LEGACY               No /proxy/network prefix (default: false)
-UNIFI_MCP_PORT             Bind port (default: 7474)
+UNIFI_MCP_PORT             Bind port (default: 40030)
 UNIFI_MCP_TOKEN            Static bearer token
 UNIFI_MCP_NO_AUTH          Disable auth (loopback only)
 ```
+
+Runtime secrets live in `~/.unifi-rmcp/.env` on the host. In Docker, that
+directory is mounted at `/data`, and the entrypoint sources `/data/.env` before
+validating required `UNIFI_*` settings.
 
 ## CLI ↔ MCP Action Parity
 
@@ -102,10 +106,10 @@ Every MCP action maps 1-to-1 with a CLI command. Both shims call the same `Unifi
 ```bash
 cargo check          # type-check
 cargo test           # unit tests (no network required)
-cargo run --bin unifi -- --help
-cargo run --bin unifi -- health --json
-cargo run --bin unifi            # HTTP MCP server on :7474
-cargo run --bin unifi -- mcp     # stdio MCP transport
+cargo run --bin runifi -- --help
+cargo run --bin runifi -- health --json
+cargo run --bin runifi           # HTTP MCP server on :40030
+cargo run --bin runifi -- mcp    # stdio MCP transport
 ```
 
 

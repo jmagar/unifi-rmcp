@@ -271,7 +271,7 @@ fn env_list(key: &str, target: &mut Vec<String>) {
 /// Resolve the local data directory for rustifi.
 ///
 /// - Inside a container (`/.dockerenv` exists or `RUNNING_IN_CONTAINER` set): `/data`
-/// - Bare-metal: `~/.unifi/`
+/// - Bare-metal: `~/.unifi-rmcp/`
 pub fn default_data_dir() -> std::path::PathBuf {
     if std::path::Path::new("/.dockerenv").exists()
         || std::env::var("RUNNING_IN_CONTAINER").is_ok()
@@ -281,10 +281,10 @@ pub fn default_data_dir() -> std::path::PathBuf {
     }
     dirs::home_dir()
         .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join(".unifi")
+        .join(".unifi-rmcp")
 }
 
-/// Load `~/.unifi/.env` (or `/data/.env` in a container) into the process
+/// Load `~/.unifi-rmcp/.env` (or `/data/.env` in a container) into the process
 /// environment if present.
 ///
 /// Best-effort: a missing file is ignored, and existing env vars are NOT

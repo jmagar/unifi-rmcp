@@ -8,6 +8,15 @@ BINARY="/usr/local/bin/${SERVICE_NAME}"
 
 DATA_DIR="${DATA_DIR:-/data}"
 
+# Load mounted runtime config before validation. The Rust binary also loads
+# /data/.env, but entrypoint validates required vars first.
+if [ -f "${DATA_DIR}/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    . "${DATA_DIR}/.env"
+    set +a
+fi
+
 # Validate required environment variables
 if [ -z "${UNIFI_URL:-}" ]; then
     echo "ERROR: UNIFI_URL is not set" >&2

@@ -159,7 +159,7 @@ fn check_required_url(env_key: &'static str, value: &str) -> DoctorCheck {
         return DoctorCheck::fail(
             "credentials",
             env_key,
-            format!("Set {env_key} in ~/.unifi/.env or your shell environment"),
+            format!("Set {env_key} in ~/.unifi-rmcp/.env or your shell environment"),
         );
     }
     // Warn if http:// — most UniFi controllers serve HTTPS (even self-signed)
@@ -182,7 +182,7 @@ fn check_required_var(env_key: &'static str, value: &str) -> DoctorCheck {
         DoctorCheck::fail(
             "credentials",
             env_key,
-            format!("Set {env_key} in ~/.unifi/.env or your shell environment"),
+            format!("Set {env_key} in ~/.unifi-rmcp/.env or your shell environment"),
         )
     } else {
         DoctorCheck::pass("credentials", env_key, "set".to_string())

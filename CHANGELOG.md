@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * add safe unifi verification modes ([fa48eb8](https://github.com/jmagar/unifi-rmcp/commit/fa48eb888f62723a0b95885aa975ec61bccf1852))
 * add unifi endpoint verifier ([1760e89](https://github.com/jmagar/unifi-rmcp/commit/1760e89ecad87dae25e06429b5a585ec7ed8799d))
 * **cli:** add 'unifi setup install' + self-install in plugin-hook ([33ae612](https://github.com/jmagar/unifi-rmcp/commit/33ae6121da90624998651ee6fd460467b6be540f))
-* **config:** load ~/.unifi/.env at startup (dotenvy, symlink-guarded); appdata resolves to ~/.unifi, not CLAUDE_PLUGIN_DATA ([307d866](https://github.com/jmagar/unifi-rmcp/commit/307d8669e30aa8ef3caa5b9b0e0591321a2eda7c))
+* **config:** load ~/.unifi-rmcp/.env at startup (dotenvy, symlink-guarded); appdata resolves to ~/.unifi-rmcp, not CLAUDE_PLUGIN_DATA ([307d866](https://github.com/jmagar/unifi-rmcp/commit/307d8669e30aa8ef3caa5b9b0e0591321a2eda7c))
 * enforce unifi capability auth scopes ([44be806](https://github.com/jmagar/unifi-rmcp/commit/44be80648eaee5be740be2d6cf61a0257c47b051))
 * verify official unifi api parity ([be9a361](https://github.com/jmagar/unifi-rmcp/commit/be9a36195bcfb92e0bbcd1f7f2d3eb68753729e3))
 
