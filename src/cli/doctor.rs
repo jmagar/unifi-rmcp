@@ -81,10 +81,11 @@ fn check_config_file(data_dir: &Path) -> DoctorCheck {
     if path.exists() {
         DoctorCheck::pass("config", "Config file", display)
     } else {
-        DoctorCheck::fail(
+        DoctorCheck::warn(
             "config",
             "Config file",
-            format!("Create {display} (optional; env vars override everything)"),
+            "not present",
+            format!("{display} is optional; env vars override everything"),
         )
     }
 }
@@ -219,8 +220,13 @@ fn check_tls_note(skip_tls_verify: bool) -> DoctorCheck {
     }
 }
 
-async fn check_upstream(url: &str, api_key: &str, skip_tls: bool) -> DoctorCheck {
-    let endpoint = format!("{}/api/self", url.trim_end_matches('/'));
+async fn check_upstream(url: &str, api_key: &str, skip_tls: bool, legacy: bool) -> DoctorCheck {
+    let self_path = if legacy {
+        "/api/self"
+    } else {
+        "/proxy/network/api/self"
+    };
+    let endpoint = format!("{}{}", url.trim_end_matches('/'), self_path);
     let client = match reqwest::ClientBuilder::new()
         .danger_accept_invalid_certs(skip_tls)
         .timeout(Duration::from_secs(8))
@@ -384,7 +390,7 @@ pub async fn run_doctor(config: &Config, json: bool) -> anyhow::Result<()> {
         check_config_file(&data_dir),
         check_dir_writable("Data directory", "config", &data_dir),
         check_dir_writable("Log directory", "config", &data_dir.join("logs")),
-        check_binary_in_path("unifi"),
+        check_binary_in_path("runifi"),
         // ── 2. Required env vars / config fields ──────────────────────────────
         check_required_url("UNIFI_URL", &config.unifi.url),
         check_required_var("UNIFI_API_KEY", &config.unifi.api_key),
@@ -399,6 +405,7 @@ pub async fn run_doctor(config: &Config, json: bool) -> anyhow::Result<()> {
                 &config.unifi.url,
                 &config.unifi.api_key,
                 config.unifi.skip_tls_verify,
+                config.unifi.legacy,
             )
             .await,
         );
