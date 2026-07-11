@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4](https://github.com/jmagar/unifi-rmcp/compare/v0.2.3...v0.2.4) (2026-07-11)
+
+
+### CI
+
+* harden npm release smoke ([60f8fc6](https://github.com/jmagar/unifi-rmcp/commit/60f8fc6ab9d3423cbcfa6b205a50f9a9d03cfd9b))
+* use tootie Tailscale OpenWiki endpoint ([7427e9d](https://github.com/jmagar/unifi-rmcp/commit/7427e9dc1563d0ec85e2cadf00d375eb08ddd629))
+
 ## [0.2.3](https://github.com/jmagar/unifi-rmcp/compare/v0.2.2...v0.2.3) (2026-07-11)
 
 
