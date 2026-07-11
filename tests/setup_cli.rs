@@ -17,6 +17,17 @@ fn make_fake_binary(dir: &std::path::Path) {
 }
 
 #[test]
+fn version_banner_uses_runifi_identity() {
+    let output = Command::new(unifi_bin()).arg("--version").output().unwrap();
+
+    assert!(output.status.success());
+    assert!(
+        String::from_utf8_lossy(&output.stdout).starts_with("runifi "),
+        "version banner should use the installed binary name"
+    );
+}
+
+#[test]
 fn setup_plugin_hook_no_repair_json_contract() {
     let home = tempfile::tempdir().unwrap();
     let bin_dir = tempfile::tempdir().unwrap();

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# install.sh — one-line installer for rustifi (unifi MCP server binary)
+# install.sh — one-line installer for runifi (UniFi MCP server binary)
 #
 # Usage:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/jmagar/rustifi/main/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/jmagar/unifi-rmcp/main/install.sh)
 #
 # Or with a custom version:
-#   RUSTIFI_VERSION=v0.2.0 bash install.sh
+#   UNIFI_RMCP_VERSION=v0.2.0 bash install.sh
 #
 set -euo pipefail
 
 BINARY_NAME="runifi"
 INSTALL_DIR="${INSTALL_DIR:-${HOME}/.local/bin}"
-REPO="jmagar/rustifi"
-VERSION="${RUSTIFI_VERSION:-latest}"
+REPO="${UNIFI_RMCP_REPO:-jmagar/unifi-rmcp}"
+VERSION="${UNIFI_RMCP_VERSION:-latest}"
 
 # Detect OS/arch
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -44,7 +44,7 @@ fi
 # Build download URL  — adjust asset name pattern to match your release workflow
 BINARY_URL="https://github.com/${REPO}/releases/download/${VERSION}/${BINARY_NAME}-${PLATFORM}"
 
-echo "Installing rustifi ${VERSION} (${PLATFORM}) → ${INSTALL_DIR}/${BINARY_NAME}"
+echo "Installing runifi ${VERSION} (${PLATFORM}) → ${INSTALL_DIR}/${BINARY_NAME}"
 echo "  Source: ${BINARY_URL}"
 
 mkdir -p "${INSTALL_DIR}"
@@ -62,7 +62,7 @@ chmod +x "${INSTALL_DIR}/${BINARY_NAME}"
 
 echo ""
 echo "Installed: ${INSTALL_DIR}/${BINARY_NAME}"
-echo "  Version: $(${INSTALL_DIR}/${BINARY_NAME} --version 2>/dev/null || echo 'unknown')"
+echo "  Version: $("${INSTALL_DIR}/${BINARY_NAME}" --version 2>/dev/null || echo 'unknown')"
 echo ""
 
 # Write a starter .env if one doesn't exist

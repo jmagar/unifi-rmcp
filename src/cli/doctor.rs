@@ -324,7 +324,7 @@ fn check_port_available(host: &str, port: u16) -> DoctorCheck {
 
 fn print_doctor_report(checks: &[DoctorCheck], version: &str) {
     println!();
-    println!("unifi-mcp {version} — environment check");
+    println!("runifi {version} — environment check");
     println!();
 
     let categories = [

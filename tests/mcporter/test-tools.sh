@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# test-tools.sh — Integration smoke-test for rustifi (UniFi MCP server) tools
+# test-tools.sh — Integration smoke-test for runifi (UniFi MCP server) tools
 #
 # Tests every non-destructive action:
 #   clients, devices, wlans, health, alarms, sysinfo, me, help
@@ -214,7 +214,7 @@ smoke_test_server() {
 
   if [[ "${health_status}" != "ok" ]]; then
     log_error "Health endpoint at ${base_url}/health did not return status=ok (got: '${health_status}')"
-    log_error "Is the unifi-mcp container running?  docker ps | grep unifi-mcp"
+    log_error "Is the unifi-rmcp container running?  docker ps | grep unifi-rmcp"
     return 2
   fi
   log_info "Health endpoint OK"
@@ -641,7 +641,7 @@ main() {
   load_env
 
   printf '%b%s%b\n' "${C_BOLD}" "$(printf '=%.0s' {1..65})" "${C_RESET}"
-  printf '%b  rustifi integration smoke-test%b\n' "${C_BOLD}" "${C_RESET}"
+  printf '%b  runifi integration smoke-test%b\n' "${C_BOLD}" "${C_RESET}"
   printf '%b  Project:  %s%b\n' "${C_BOLD}" "${PROJECT_DIR}" "${C_RESET}"
   printf '%b  MCP URL:  %s%b\n' "${C_BOLD}" "${MCP_URL}" "${C_RESET}"
   printf '%b  Timeout:  %dms/call | Parallel: %s%b\n' \
@@ -656,7 +656,7 @@ main() {
     log_error "Server connectivity check failed. Aborting — no tests will run."
     log_error ""
     log_error "To diagnose:"
-    log_error "  docker ps | grep unifi-mcp"
+    log_error "  docker ps | grep unifi-rmcp"
     log_error "  curl http://localhost:40030/health"
     log_error "  curl -X POST http://localhost:40030/mcp -H 'Content-Type: application/json' \\"
     log_error "    -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}'"

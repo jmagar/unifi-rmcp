@@ -1,18 +1,18 @@
-name: rustifi
+name: unifi-rmcp
 
 # Local development stack. Builds from this checkout.
 services:
-  unifi-mcp:
+  unifi-rmcp:
     extends:
       file: docker-compose.prod.yml
-      service: unifi-mcp
-    image: rustifi:dev
+      service: unifi-rmcp
+    image: unifi-rmcp:dev
     pull_policy: build
     build:
       context: .
       dockerfile: config/Dockerfile
 
 networks:
-  rustifi:
-    name: ${DOCKER_NETWORK:-rustifi}
+  unifi-rmcp:
+    name: ${DOCKER_NETWORK:-unifi-rmcp}
     external: true

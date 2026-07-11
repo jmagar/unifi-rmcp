@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "tv.tootie/rustifi",
+  "name": "tv.tootie/unifi-rmcp",
   "title": "UniFi MCP",
   "description": "Read-only MCP server for Ubiquiti UniFi networks — query connected clients, devices, WiFi configs, alarms, and site health.",
   "repository": {
-    "url": "https://github.com/jmagar/rustifi",
+    "url": "https://github.com/jmagar/unifi-rmcp",
     "source": "github"
   },
   "version": "0.2.4",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/jmagar/rustifi:0.1.1",
+      "identifier": "ghcr.io/jmagar/unifi-rmcp:0.2.4",
       "version": "0.2.4",
       "environmentVariables": [
         {
@@ -50,7 +50,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://rustifi.tootie.tv/mcp"
+      "url": "https://unifi-rmcp.tootie.tv/mcp"
     }
   ]
 }

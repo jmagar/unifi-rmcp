@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
             return Ok(());
         }
         [f] if matches!(f.as_str(), "--version" | "-V" | "version") => {
-            println!("rustifi {}", env!("CARGO_PKG_VERSION"));
+            println!("runifi {}", env!("CARGO_PKG_VERSION"));
             return Ok(());
         }
         _ => {}
@@ -86,7 +86,7 @@ async fn serve_mcp() -> Result<()> {
         bind = %state.config.bind_addr(),
         server_name = %state.config.server_name,
         auth = ?state.auth_policy,
-        "rustifi starting"
+        "runifi starting"
     );
 
     let bind = state.config.bind_addr();

@@ -1,8 +1,8 @@
-name: rustifi
+name: unifi-rmcp
 
 x-common-service: &common-service
   networks:
-    - rustifi
+    - unifi-rmcp
   restart: unless-stopped
   extra_hosts:
     - "host.docker.internal:host-gateway"
@@ -18,10 +18,10 @@ x-common-service: &common-service
       compress: "true"
 
 services:
-  unifi-mcp:
+  unifi-rmcp:
     <<: *common-service
-    image: ghcr.io/jmagar/rustifi:${RUSTIFI_VERSION:-latest}
-    container_name: unifi-mcp
+    image: ghcr.io/jmagar/unifi-rmcp:${UNIFI_RMCP_VERSION:-latest}
+    container_name: unifi-rmcp
     # entrypoint.sh runs as root and drops to 1000:1000 via gosu.
     # Do not set user: here; entrypoint needs root to chown /data.
     ports:
@@ -41,6 +41,6 @@ services:
           cpus: '0.5'
 
 networks:
-  rustifi:
-    name: ${DOCKER_NETWORK:-rustifi}
+  unifi-rmcp:
+    name: ${DOCKER_NETWORK:-unifi-rmcp}
     external: true

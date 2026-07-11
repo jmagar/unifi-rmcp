@@ -11,9 +11,9 @@
 [mcp]
 host = "0.0.0.0"
 port = 40030
-server_name = "rustifi"
-# allowed_hosts = ["unifi-mcp.example.com"]
-# allowed_origins = ["https://unifi-mcp.example.com"]
+server_name = "unifi-rmcp"
+# allowed_hosts = ["unifi-rmcp.example.com"]
+# allowed_origins = ["https://unifi-rmcp.example.com"]
 
 [mcp.auth]
 # mode = "bearer"              # or "oauth"

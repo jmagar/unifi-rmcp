@@ -1,5 +1,5 @@
 #!/bin/sh
-# entrypoint.sh — Docker entrypoint for rustifi (UniFi MCP server)
+# entrypoint.sh — Docker entrypoint for runifi (UniFi MCP server)
 # Runs as root, validates config, sets up /data, then exec's as USER 1000:1000
 set -e
 

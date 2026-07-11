@@ -68,7 +68,7 @@ repair:
     set -euo pipefail
     docker compose down || true
     docker compose up -d
-    echo "unifi-mcp: restarted"
+    echo "unifi-rmcp: restarted"
 
 # ── Install / setup ───────────────────────────────────────────────────────────
 
@@ -97,7 +97,7 @@ validate-skills:
 validate-plugin: validate-skills
 
 runtime-current:
-    bash scripts/check-runtime-current.sh --unit unifi-mcp.service --service unifi-mcp --expected-binary target/release/runifi
+    bash scripts/check-runtime-current.sh --unit unifi-rmcp.service --service unifi-rmcp --expected-binary target/release/runifi
 
 # ── Release / publish ─────────────────────────────────────────────────────────
 
