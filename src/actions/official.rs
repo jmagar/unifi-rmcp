@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Result};
 use reqwest::Method;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use crate::api::{http, official::OfficialNetworkApi, path, ApiSourceFamily};
 use crate::capabilities::Capability;
@@ -22,15 +22,45 @@ pub async fn execute(cfg: &UnifiConfig, capability: &Capability, params: &Value)
         .unwrap_or("GET")
         .parse::<Method>()
         .context("invalid official HTTP method")?;
-    let path = path::substitute_path(path_template, params, CONNECTOR_PREFIXES)?;
+    let mut effective_params = params.clone();
+    normalize_official_request(capability.action.as_str(), &mut effective_params);
+    let path = path::substitute_path(path_template, &effective_params, CONNECTOR_PREFIXES)?;
     let api = OfficialNetworkApi::new(&cfg.url);
     let full_path = api.path(&path);
     http::request_json(
         cfg,
         method,
         &full_path,
-        params.get("query"),
-        params.get("body"),
+        effective_params.get("query"),
+        effective_params.get("body"),
     )
     .await
+}
+
+fn normalize_official_request(action: &str, params: &mut Value) {
+    if action != "official_get_firewall_policy_ordering" {
+        return;
+    }
+    let Some(zone_id) = params
+        .get("query")
+        .and_then(|query| query.get("firewallZoneId"))
+        .cloned()
+    else {
+        return;
+    };
+    if !params.is_object() {
+        *params = json!({});
+    }
+    let object = params.as_object_mut().expect("params object");
+    let query = object.entry("query").or_insert_with(|| json!({}));
+    if !query.is_object() {
+        return;
+    }
+    let query = query.as_object_mut().expect("query object");
+    query
+        .entry("sourceFirewallZoneId".to_string())
+        .or_insert_with(|| zone_id.clone());
+    query
+        .entry("destinationFirewallZoneId".to_string())
+        .or_insert(zone_id);
 }

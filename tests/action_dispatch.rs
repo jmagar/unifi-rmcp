@@ -187,7 +187,8 @@ async fn events_action_calls_rest_event_and_applies_limit() {
         .expect("events should succeed");
 
     let request = server.request();
-    assert!(request.starts_with("get /proxy/network/api/s/default/rest/event "));
+    assert!(request.starts_with("post /proxy/network/v2/api/site/default/system-log/all "));
+    assert!(request.contains("{}"));
     assert_eq!(result["data"].as_array().expect("data").len(), 1);
 }
 
@@ -206,6 +207,119 @@ async fn generated_internal_v2_action_uses_v2_site_prefix() {
 
     let request = server.request();
     assert!(request.starts_with("get /proxy/network/v2/api/site/default/acl-rules "));
+}
+
+#[tokio::test]
+async fn internal_read_post_actions_default_empty_body() {
+    let server = CaptureServer::spawn(200, r#"{"data":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "unifi_list_events".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("read POST action should succeed without caller body");
+
+    let request = server.request();
+    assert!(request.starts_with("post /proxy/network/v2/api/site/default/system-log/all "));
+    assert!(request.contains("{}"));
+}
+
+#[tokio::test]
+async fn client_sessions_defaults_to_time_range_body() {
+    let server = CaptureServer::spawn(200, r#"{"data":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "unifi_get_client_sessions".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("client sessions should supply a default time range");
+
+    let request = server.request();
+    assert!(request.starts_with("post /proxy/network/api/s/default/stat/session "));
+    assert!(request.contains(r#""start":"#));
+    assert!(request.contains(r#""end":"#));
+}
+
+#[tokio::test]
+async fn gateway_settings_uses_existing_mgmt_setting_endpoint() {
+    let server = CaptureServer::spawn(200, r#"{"data":[{"key":"mgmt"}]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "unifi_get_gateway_settings".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("gateway settings should use the controller's mgmt setting endpoint");
+
+    let request = server.request();
+    assert!(request.starts_with("get /proxy/network/api/s/default/get/setting/mgmt "));
+}
+
+#[tokio::test]
+async fn ips_events_use_security_system_log_fallback() {
+    let server = CaptureServer::spawn(
+        200,
+        r#"{"data":[{"id":1,"category":"SECURITY"},{"id":2,"category":"CLIENT_DEVICES"}]}"#,
+    );
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    let result = dispatcher
+        .execute(ActionRequest {
+            action: "unifi_get_ips_events".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("IPS events should use security system-log events");
+
+    let request = server.request();
+    assert!(request.starts_with("post /proxy/network/v2/api/site/default/system-log/all "));
+    assert_eq!(result["data"].as_array().expect("data").len(), 1);
+}
+
+#[tokio::test]
+async fn traffic_flow_statistics_falls_back_to_traffic_flows_search() {
+    let server = CaptureServer::spawn(200, r#"{"data":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "unifi_get_traffic_flow_statistics".into(),
+            params: json!({}),
+        })
+        .await
+        .expect("traffic flow statistics should use the working traffic-flows search");
+
+    let request = server.request();
+    assert!(request.starts_with("post /proxy/network/v2/api/site/default/traffic-flows "));
+    assert!(request.contains("{}"));
+}
+
+#[tokio::test]
+async fn firewall_ordering_accepts_single_zone_convenience_query() {
+    let server = CaptureServer::spawn(200, r#"{"orderedFirewallPolicyIds":[]}"#);
+    let dispatcher = ActionDispatcher::new_for_test(test_config(server.url()));
+
+    dispatcher
+        .execute(ActionRequest {
+            action: "official_get_firewall_policy_ordering".into(),
+            params: json!({"siteId": "site-1", "query": {"firewallZoneId": "zone-1"}}),
+        })
+        .await
+        .expect("firewall ordering should expand a single zone query");
+
+    let request = server.request();
+    assert!(request
+        .starts_with("get /proxy/network/integration/v1/sites/site-1/firewall/policies/ordering?"));
+    assert!(request.contains("sourcefirewallzoneid=zone-1"));
+    assert!(request.contains("destinationfirewallzoneid=zone-1"));
 }
 
 #[tokio::test]
