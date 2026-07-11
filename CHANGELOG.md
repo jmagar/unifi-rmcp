@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2](https://github.com/jmagar/unifi-rmcp/compare/v0.2.1...v0.2.2) (2026-07-10)
+
+
+### CI
+
+* skip mcp registry publish without secret ([2647842](https://github.com/jmagar/unifi-rmcp/commit/26478425c4594c7c4ada00a69a7f3c50eeac463f))
+
 ## [0.2.0](https://github.com/jmagar/unifi-rmcp/compare/v0.1.1...v0.2.0) (2026-07-05)
 
 
