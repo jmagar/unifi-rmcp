@@ -2,7 +2,7 @@
   "mcpServers": {
     "unifi": {
       "command": "npx",
-      "args": ["-y", "unifi-rmcp"]
+      "args": ["-y", "unifi-rmcp", "mcp"]
     }
   }
 }

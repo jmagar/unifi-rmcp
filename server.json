@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "tv.tootie/unifi-rmcp",
   "title": "UniFi MCP",
-  "description": "Read-only MCP server for Ubiquiti UniFi networks — query connected clients, devices, WiFi configs, alarms, and site health.",
+  "description": "MCP server for Ubiquiti UniFi networks — query clients, devices, WiFi, health, alarms, events, and generated official/internal API actions.",
   "repository": {
     "url": "https://github.com/jmagar/unifi-rmcp",
     "source": "github"

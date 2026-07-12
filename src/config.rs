@@ -290,7 +290,7 @@ pub fn default_data_dir() -> std::path::PathBuf {
 /// Best-effort: a missing file is ignored, and existing env vars are NOT
 /// overridden — values injected by docker-compose/systemd or the plugin hook's
 /// `CLAUDE_PLUGIN_OPTION_*` mapping still take precedence. Lets the binary find
-/// its credentials directly from `~/.unifi/.env` without a process manager.
+/// its credentials directly from `~/.unifi-rmcp/.env` without a process manager.
 /// Call once at startup before `Config::load`. A symlinked `.env` is refused
 /// (the dir holds secrets; mirrors axon).
 pub fn load_dotenv() {

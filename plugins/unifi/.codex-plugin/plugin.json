@@ -1,8 +1,8 @@
 {
   "name": "rustifi",
-  "description": "UniFi network MCP server for Codex — read-only access to connected clients, devices, WiFi configs, alarms, and site health.",
-  "homepage": "https://github.com/jmagar/rustifi",
-  "repository": "https://github.com/jmagar/rustifi",
+  "description": "UniFi network MCP server for Codex — official, internal, and hybrid UniFi Network actions.",
+  "homepage": "https://github.com/jmagar/unifi-rmcp",
+  "repository": "https://github.com/jmagar/unifi-rmcp",
   "license": "MIT",
   "keywords": [
     "unifi",
@@ -15,13 +15,14 @@
   "interface": {
     "displayName": "UniFi MCP",
     "shortDescription": "Query UniFi network clients, devices, and health",
-    "longDescription": "Read-only MCP server for Ubiquiti UniFi networks. Exposes connected wireless and wired clients, network devices (APs, switches, gateways), WiFi configurations (SSIDs, bands, security), site health, active alarms, recent events, controller sysinfo, and authenticated user info — all via a single unified MCP tool.",
+    "longDescription": "MCP server for Ubiquiti UniFi networks. Exposes connected wireless and wired clients, network devices, WiFi configurations, site health, alarms, events, sysinfo, authenticated user info, and generated official/internal UniFi API actions through a single action-dispatched MCP tool.",
     "developerName": "Jacob Magar",
     "category": "Infrastructure",
     "capabilities": [
-      "Read"
+      "Read",
+      "Write"
     ],
-    "websiteURL": "https://github.com/jmagar/rustifi",
+    "websiteURL": "https://github.com/jmagar/unifi-rmcp",
     "defaultPrompt": [
       "Who is currently connected to my network? Show me all clients with their IP addresses.",
       "Are all my UniFi devices online? Show me access point and switch status.",
