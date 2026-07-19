@@ -2,7 +2,7 @@
 # install.sh — one-line installer for runifi (UniFi MCP server binary)
 #
 # Usage:
-#   bash <(curl -fsSL https://raw.githubusercontent.com/jmagar/unifi-rmcp/main/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/jmagar/runifi/main/install.sh)
 #
 # Or with a custom version:
 #   UNIFI_RMCP_VERSION=v0.2.0 bash install.sh
@@ -11,7 +11,7 @@ set -euo pipefail
 
 BINARY_NAME="runifi"
 INSTALL_DIR="${INSTALL_DIR:-${HOME}/.local/bin}"
-REPO="${UNIFI_RMCP_REPO:-jmagar/unifi-rmcp}"
+REPO="${UNIFI_RMCP_REPO:-jmagar/runifi}"
 VERSION="${UNIFI_RMCP_VERSION:-latest}"
 
 # Detect OS/arch

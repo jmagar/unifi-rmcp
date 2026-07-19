@@ -4,9 +4,9 @@
   "title": "UniFi RMCP",
   "description": "Rust MCP server and CLI for UniFi Network controller operations.",
   "version": "0.2.4",
-  "websiteUrl": "https://github.com/jmagar/unifi-rmcp",
+  "websiteUrl": "https://github.com/jmagar/runifi",
   "repository": {
-    "url": "https://github.com/jmagar/unifi-rmcp",
+    "url": "https://github.com/jmagar/runifi",
     "source": "github",
     "id": "1238227294"
   },
@@ -68,8 +68,8 @@
           "format": "string",
           "isRequired": false,
           "isSecret": false,
-          "default": "jmagar/unifi-rmcp",
-          "placeholder": "jmagar/unifi-rmcp"
+          "default": "jmagar/runifi",
+          "placeholder": "jmagar/runifi"
         },
         {
           "name": "UNIFI_RMCP_RELEASE_BASE_URL",
@@ -103,7 +103,7 @@
       },
       "buildInfo": {
         "version": "0.2.4",
-        "repository": "https://github.com/jmagar/unifi-rmcp"
+        "repository": "https://github.com/jmagar/runifi"
       }
     }
   }

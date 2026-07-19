@@ -6,7 +6,7 @@ head: a5e5cd4
 plan: docs/superpowers/plans/2026-07-04-unifi-official-and-internal-api-support.md
 working directory: /home/jmagar/workspace/rustifi/.worktrees/codex-unifi-api-support
 worktree: /home/jmagar/workspace/rustifi/.worktrees/codex-unifi-api-support
-pr: https://github.com/jmagar/unifi-rmcp/pull/2
+pr: https://github.com/jmagar/runifi/pull/2
 beads: rustifi-4wo
 ---
 
@@ -90,7 +90,7 @@ The branch added registry-backed official API dispatch, verified internal capabi
 | `cargo test` | passed; live smoke tests ignored |
 | removed-gate literal sweep | no matches |
 | `bd show rustifi-4wo --json` | open follow-up verified |
-| `gh pr view 2 --repo jmagar/unifi-rmcp ...` | PR open and mergeable; external review bots rate-limited |
+| `gh pr view 2 --repo jmagar/runifi ...` | PR open and mergeable; external review bots rate-limited |
 
 ## Errors Encountered
 
@@ -133,7 +133,7 @@ The branch added registry-backed official API dispatch, verified internal capabi
 
 ## References
 
-- PR: https://github.com/jmagar/unifi-rmcp/pull/2
+- PR: https://github.com/jmagar/runifi/pull/2
 - Bead: `rustifi-4wo`
 - Official inventory: `data/unifi_official_network_v10_3_58.json`
 - Internal reference inventory: `data/upstream_mcp_network_tools_main.json`

@@ -85,7 +85,7 @@ the short Rust CLI name `runifi`.
 | Path | Command | Best for | Notes |
 |---|---|---|---|
 | npm / npx | `npx -y unifi-rmcp --help` | Local MCP clients and quick trials. | Downloads the matching `runifi` binary from GitHub Releases. |
-| Release installer | `curl -fsSL https://raw.githubusercontent.com/jmagar/unifi-rmcp/main/scripts/install.sh \| bash` | Host installs without Node. | Installs `runifi` for the current Linux host. |
+| Release installer | `curl -fsSL https://raw.githubusercontent.com/jmagar/runifi/main/scripts/install.sh \| bash` | Host installs without Node. | Installs `runifi` for the current Linux host. |
 | Docker / Compose | `docker compose up -d` | Shared HTTP MCP deployments. | Reads `.env` and exposes container port `40030`. |
 | Build from source | `cargo build --release` | Development and audits. | Produces `target/release/runifi`. |
 | Plugin | `claude plugin install plugins/unifi` | Claude Code local plugin setup from this checkout. | Uses the packaged setup hook, skill, and local runtime metadata. |
@@ -113,7 +113,7 @@ behavior only when testing packaging:
 ### Build From Source
 
 ```bash
-git clone https://github.com/jmagar/unifi-rmcp
+git clone https://github.com/jmagar/runifi
 cd unifi-rmcp
 cargo build --release
 ./target/release/runifi --help
@@ -374,7 +374,7 @@ CLI shim       (src/cli.rs)            argv -> service -> stdout
 - GitHub Releases publish the `runifi` binary consumed by the npm launcher.
 - The npm package name is `unifi-rmcp`; binary aliases are `unifi-rmcp` and
   `runifi`.
-- Docker/OCI metadata uses `ghcr.io/jmagar/unifi-rmcp:<version>`.
+- Docker/OCI metadata uses `ghcr.io/jmagar/runifi:<version>`.
 - `plugins/unifi/.mcp.json` must launch `npx -y unifi-rmcp mcp` so stdio
   clients start the MCP transport rather than the HTTP server.
 - The root README is curated. Source of truth for current actions and generated
@@ -446,21 +446,19 @@ gateway.
 
 ## Related Servers
 
-- `tailscale-rmcp / rustscale` - Tailscale API bridge for devices, users, and tailnet operations.
-- `unraid-rmcp / unrust` - Unraid GraphQL bridge for NAS and server management.
-- `apprise-rmcp` - Apprise notification fan-out bridge for many delivery backends.
-- `gotify-rmcp` - Gotify push notification bridge for sends, messages, apps, and clients.
-- `arcane-rmcp` - Arcane Docker management bridge for containers and related resources.
-- `yarr-rmcp` - Media-stack bridge for Sonarr, Radarr, Prowlarr, Plex, and related services.
-- `ytdl-mcp` - Media download and metadata workflow server.
-- `synapse` - Local Synapse workflow server for scout and flux actions.
-- `cortex` - Syslog and homelab log aggregation MCP server.
-- `axon` - RAG, crawl, scrape, extract, and semantic search project.
-- `lab` - Homelab control plane and Labby gateway project.
-- `lumen` - Local semantic code search MCP server.
-- `nugs` - Project/package management helper for local agent workflows.
-- `agentcast` - Agent transcript and activity publishing project.
-- `soma` - RMCP scaffold/runtime template for new provider-backed servers.
+- [soma](https://github.com/jmagar/soma) - RMCP runtime for provider-backed MCP servers.
+- [tailscale-rmcp](https://github.com/jmagar/rtailscale) - Tailscale API bridge for devices, users, and tailnet operations.
+- [unraid-rmcp](https://github.com/jmagar/runraid) - Unraid GraphQL bridge for NAS and server management.
+- [apprise-rmcp](https://github.com/jmagar/rapprise) - Apprise notification fan-out bridge for many delivery backends.
+- [gotify-rmcp](https://github.com/jmagar/rgotify) - Gotify push notification bridge for sends, messages, apps, and clients.
+- [arcane-rmcp](https://github.com/jmagar/rarcane) - Arcane Docker management bridge for containers and related resources.
+- [yarr](https://github.com/jmagar/yarr) - Media-stack bridge for Sonarr, Radarr, Prowlarr, Plex, and related services.
+- [ytdl-rmcp](https://github.com/jmagar/rytdl) - Media download and metadata workflow server.
+- [synapse-rmcp](https://github.com/jmagar/synapse) - Local Synapse workflow server for scout and flux actions.
+- [cortex](https://github.com/jmagar/cortex) - Syslog and homelab log aggregation MCP server.
+- [axon](https://github.com/jmagar/axon) - RAG, crawl, scrape, extract, and semantic search project.
+- [labby](https://github.com/jmagar/labby) - Homelab control plane and MCP gateway project.
+- [lumen](https://github.com/jmagar/lumen) - Local semantic code search MCP server.
 
 ## Documentation
 

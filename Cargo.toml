@@ -9,8 +9,8 @@ edition = "2021"
 rust-version = "1.86"
 categories = ["command-line-utilities", "development-tools"]
 keywords = ["mcp", "unifi", "ubiquiti", "networking", "rmcp"]
-repository = "https://github.com/jmagar/unifi-rmcp"
-homepage = "https://github.com/jmagar/unifi-rmcp#readme"
+repository = "https://github.com/jmagar/runifi"
+homepage = "https://github.com/jmagar/runifi#readme"
 description = "Rust MCP server and CLI for UniFi Network controllers with REST-backed operations, auth, and plugin packaging."
 autobins = false
 

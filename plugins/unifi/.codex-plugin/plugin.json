@@ -1,8 +1,8 @@
 {
   "name": "rustifi",
   "description": "UniFi network MCP server for Codex — official, internal, and hybrid UniFi Network actions.",
-  "homepage": "https://github.com/jmagar/unifi-rmcp",
-  "repository": "https://github.com/jmagar/unifi-rmcp",
+  "homepage": "https://github.com/jmagar/runifi",
+  "repository": "https://github.com/jmagar/runifi",
   "license": "MIT",
   "keywords": [
     "unifi",
@@ -22,7 +22,7 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/jmagar/unifi-rmcp",
+    "websiteURL": "https://github.com/jmagar/runifi",
     "defaultPrompt": [
       "Who is currently connected to my network? Show me all clients with their IP addresses.",
       "Are all my UniFi devices online? Show me access point and switch status.",

@@ -21,7 +21,7 @@ unifi-rmcp exposes UniFi controller REST APIs to AI clients (Claude, Cursor, etc
 ### 1. Clone and Build
 
 ```bash
-git clone https://github.com/jmagar/unifi-rmcp.git
+git clone https://github.com/jmagar/runifi.git
 cd unifi-rmcp
 cargo build --release
 ```

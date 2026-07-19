@@ -3,14 +3,14 @@
   "version": "0.2.4",
   "description": "Node launcher for the UniFi Rust MCP server and runifi CLI for network controller operations.",
   "license": "MIT",
-  "homepage": "https://github.com/jmagar/unifi-rmcp#readme",
+  "homepage": "https://github.com/jmagar/runifi#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jmagar/unifi-rmcp.git",
+    "url": "git+https://github.com/jmagar/runifi.git",
     "directory": "packages/unifi-rmcp"
   },
   "bugs": {
-    "url": "https://github.com/jmagar/unifi-rmcp/issues"
+    "url": "https://github.com/jmagar/runifi/issues"
   },
   "bin": {
     "unifi-rmcp": "bin/runifi.js",
@@ -20,12 +20,16 @@
     "bin/",
     "lib/",
     "scripts/",
-    "README.md"
+    "README.md",
+    "LICENSE*",
+    "package.json"
   ],
   "scripts": {
+    "prepack": "node scripts/sync-readme.js",
     "postinstall": "node scripts/install.js",
     "test": "node --test",
-    "check": "node --check bin/runifi.js && node --check scripts/install.js && node --check lib/platform.js"
+    "check": "node --check bin/runifi.js && node --check scripts/install.js && node --check lib/platform.js && node --check scripts/sync-readme.js && node --check scripts/check-package.js && node scripts/check-package.js",
+    "prepublishOnly": "node scripts/check-package.js --release"
   },
   "engines": {
     "node": ">=18"
@@ -51,5 +55,9 @@
     "http-server"
   ],
   "mcpName": "ai.dinglebear/unifi-rmcp",
-  "binaryVersion": "0.2.3"
+  "binaryVersion": "0.2.3",
+  "author": {
+    "name": "dinglebear.ai",
+    "url": "https://dinglebear.ai"
+  }
 }
