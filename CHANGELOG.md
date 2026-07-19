@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5](https://github.com/jmagar/runifi/compare/v0.2.4...v0.2.5) (2026-07-19)
+
+
+### Bug Fixes
+
+* align unifi rmcp runtime naming ([01583b2](https://github.com/jmagar/runifi/commit/01583b2ac4484f2b442eebe249b7788829338f4c))
+* complete unifi rmcp package rename ([d9555c5](https://github.com/jmagar/runifi/commit/d9555c50996c9c379116fe1c0d0b4a3e7defd72f))
+* route rust builds through sccache wrapper ([965ab05](https://github.com/jmagar/runifi/commit/965ab0570d15a6e33e72b94373d94245d3c9063b))
+
+
+### Documentation
+
+* align README with RMCP guide ([31cbc01](https://github.com/jmagar/runifi/commit/31cbc01dd56883c095bac6dcaddffe9f1ee6de79))
+
+
+### Refactoring
+
+* extract core unifi crate ([8a2d68e](https://github.com/jmagar/runifi/commit/8a2d68ee88e4aa8c6cb38c10550f703cfc5b2c49))
+* move unifi actions into core crate ([9bccb82](https://github.com/jmagar/runifi/commit/9bccb82fd1b40d6b4c67259d4ee148049dd91a8d))
+
+
+### CI
+
+* authenticate OpenWiki Tailscale with OAuth ([e9ec961](https://github.com/jmagar/runifi/commit/e9ec96158db1f0129fb9a872a53e436f4e3b49d1))
+* connect OpenWiki workflow to Tailscale ([4c3b68a](https://github.com/jmagar/runifi/commit/4c3b68a6e8c38f718b6cf86be7d67ad202ffefa4))
+* run OpenWiki on Tailscale runner ([166b0b5](https://github.com/jmagar/runifi/commit/166b0b57251945c92a6e289d2f91684ae204002d))
+
 ## [0.2.4](https://github.com/jmagar/runifi/compare/v0.2.3...v0.2.4) (2026-07-11)
 
 
