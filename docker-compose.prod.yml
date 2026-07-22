@@ -24,6 +24,9 @@ services:
     container_name: runifi
     # entrypoint.sh runs as root and drops to 1000:1000 via gosu.
     # Do not set user: here; entrypoint needs root to chown /data.
+    env_file:
+      - path: .env
+        required: false
     ports:
       - "${UNIFI_MCP_PORT:-40030}:40030/tcp"
     volumes:
